@@ -1,0 +1,72 @@
+name: package_armor
+description: An advanced Flutter Linux desktop application for comprehensive package installation and management across multiple sources
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # File picker for selecting package files
+  file_picker: ^8.0.0+1
+  
+  # Path manipulation
+  path: ^1.9.0
+  
+  # Process execution
+  process_run: ^1.2.0
+  
+  # HTTP requests for downloading packages
+  http: ^1.1.0
+  
+  # URL launcher for opening links
+  url_launcher: ^6.2.1
+  
+  # Shared preferences for settings
+  shared_preferences: ^2.2.2
+  
+  # Archive extraction
+  archive: ^3.4.9
+  
+  # JSON handling
+  json_annotation: ^4.8.1
+  
+  # UI Components
+  cupertino_icons: ^1.0.8
+  
+  # HTTP client for API requests
+  dio: ^5.4.0
+  
+  # File hashing for VirusTotal
+  crypto: ^3.0.3
+
+dev_dependencies:
+  flutter_launcher_icons: "^0.14.4"
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/icon.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
+  web:
+    generate: true
+    image_path: "assets/icon/icon.png"
+    background_color: "#hexcode"
+    theme_color: "#hexcode"
+  windows:
+    generate: true
+    image_path: "assets/icon/icon.png"
+    icon_size: 48 # min:48, max:256, default: 48
+  macos:
+    generate: true
+    image_path: "assets/icon/icon.png"
+
+flutter:
+  uses-material-design: true

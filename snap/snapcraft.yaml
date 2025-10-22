@@ -1,0 +1,41 @@
+name: package-armor
+version: '0.1.0'
+summary: Package Armor — GUI package manager
+description: |
+  Package Armor is a graphical package manager for inspecting and managing packages on Linux.
+
+confinement: strict
+base: core22
+grade: stable
+
+slots:
+  dbus-package-armor:
+    interface: dbus
+    bus: session
+    name: org.package_armor
+
+apps:
+  package-armor:
+    command: package_armor
+    extensions: [gnome] # gnome extension provides GTK/desktop runtime for Flutter apps
+    plugs:
+      - network
+      - network-bind
+      - home
+      - removable-media
+      - desktop
+      - desktop-legacy
+      - x11
+      - wayland
+    slots:
+      - dbus-package-armor
+
+parts:
+  package-armor:
+    source: .
+    plugin: flutter
+    flutter-target: lib/main.dart
+    build-packages:
+      - clang
+      - make
+      - pkg-config

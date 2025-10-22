@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0.0
+Name=package armor
+GenericName=package armor
+Comment=An advanced Flutter Linux desktop application for comprehensive package installation and management across multiple sources
+Terminal=false
+Type=Application
+Categories=Utility;
+Keywords=Flutter;
+Icon=package_armor

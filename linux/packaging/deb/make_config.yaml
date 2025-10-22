@@ -1,0 +1,11 @@
+package_name: PackageArmor   # your app's actual name; don't use 'your_app_name'
+package_version: 1.0.0                # set your app version
+maintainer: Piyu Pika test1@example.com # your actual name/email
+description: Linux package manager built in Flutter # actual short description
+homepage: https://github.com/Piyu-Pika/linux_package_manager # use a valid URL or your repo
+depends:
+  - libgtk-3-0
+  - libc6
+  - libgcc1
+  - libstdc++6
+architecture: amd64

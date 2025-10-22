@@ -1,0 +1,14 @@
+flutter_app: 
+  command: package_armor
+  arch: x64
+  parent: /usr/local/lib
+
+control:
+  Package: package-armor
+  Version: 1.0.0
+  Architecture: amd64
+  Priority: optional
+  Section: utils
+  Depends: libc6, libgtk-3-0, libblkid1, liblzma5
+  Maintainer: Package Armor Team <team@packagearmor.com>
+  Description: Advanced Flutter Linux desktop application for package management

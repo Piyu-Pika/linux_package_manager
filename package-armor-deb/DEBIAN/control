@@ -1,0 +1,11 @@
+Package: package-armor
+Version: 1.0.0
+Section: utils
+Priority: optional
+Architecture: amd64
+Depends: libc6, libgtk-3-0, libblkid1, liblzma5
+Maintainer: Package Armor Team <team@packagearmor.com>
+Description: Advanced Flutter Linux desktop application for package management
+ An advanced Flutter Linux desktop application for comprehensive package
+ installation and management across multiple sources including APT, Snap,
+ Flatpak, and AppImage formats.

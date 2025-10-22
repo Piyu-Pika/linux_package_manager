@@ -1,0 +1,14 @@
+id: com.piyu_pika.package_armor
+runtime: org.freedesktop.Platform
+runtime-version: '23.08'
+sdk: org.freedesktop.Sdk
+command: your-app-executable
+modules:
+  - name: your-app
+    buildsystem: simple
+    build-commands:
+      - flutter build linux --release
+      - install -Dm755 build/linux/x64/release/bundle/your-app /app/bin/your-app
+    sources:
+      - type: dir
+        path: .
