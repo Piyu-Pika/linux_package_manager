@@ -1,27 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'install_screen.dart';
 import 'installed_apps_screen.dart';
 import 'search_screen.dart';
 import 'settings_screen.dart';
-import '../services/theme_service.dart';
+import 'scan_reports_screen.dart';
+import '../providers/theme_provider.dart';
 
-class HomeScreen extends StatefulWidget {
-  final ThemeService themeService;
-  
-  const HomeScreen({super.key, required this.themeService});
+class HomeScreen extends ConsumerStatefulWidget {
+  const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _selectedIndex = 0;
 
   List<Widget> get _screens => [
     const SearchScreen(),
     const InstallScreen(),
     const InstalledAppsScreen(),
-    SettingsScreen(themeService: widget.themeService),
+    const ScanReportsScreen(),
+    const SettingsScreen(),
   ];
 
   static const List<NavigationItem> _navigationItems = [
@@ -42,6 +43,12 @@ class _HomeScreenState extends State<HomeScreen> {
       selectedIcon: Icons.apps_rounded,
       label: 'Installed',
       tooltip: 'Manage installed packages',
+    ),
+    NavigationItem(
+      icon: Icons.security_outlined,
+      selectedIcon: Icons.security_rounded,
+      label: 'Security',
+      tooltip: 'View virus scan reports',
     ),
     NavigationItem(
       icon: Icons.settings_outlined,
@@ -77,14 +84,38 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         actions: [
-          AnimatedBuilder(
-            animation: widget.themeService,
-            builder: (context, child) {
+          Consumer(
+            builder: (context, ref, child) {
+              final themeMode = ref.watch(themeModeProvider);
+              final themeNotifier = ref.read(themeModeProvider.notifier);
+              
+              IconData getThemeIcon() {
+                switch (themeMode) {
+                  case ThemeMode.light:
+                    return Icons.light_mode_rounded;
+                  case ThemeMode.dark:
+                    return Icons.dark_mode_rounded;
+                  case ThemeMode.system:
+                    return Icons.brightness_auto_rounded;
+                }
+              }
+              
+              String getThemeString() {
+                switch (themeMode) {
+                  case ThemeMode.light:
+                    return 'Light';
+                  case ThemeMode.dark:
+                    return 'Dark';
+                  case ThemeMode.system:
+                    return 'System';
+                }
+              }
+              
               return PopupMenuButton<ThemeMode>(
-                icon: Icon(widget.themeService.themeModeIcon),
-                tooltip: 'Theme: ${widget.themeService.themeModeString}',
+                icon: Icon(getThemeIcon()),
+                tooltip: 'Theme: ${getThemeString()}',
                 onSelected: (ThemeMode mode) {
-                  widget.themeService.setThemeMode(mode);
+                  themeNotifier.setThemeMode(mode);
                 },
                 itemBuilder: (context) => [
                   PopupMenuItem(
@@ -93,7 +124,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Icon(
                           Icons.light_mode_rounded,
-                          color: widget.themeService.themeMode == ThemeMode.light
+                          color: themeMode == ThemeMode.light
                               ? Theme.of(context).colorScheme.primary
                               : null,
                         ),
@@ -101,7 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Text(
                           'Light',
                           style: TextStyle(
-                            fontWeight: widget.themeService.themeMode == ThemeMode.light
+                            fontWeight: themeMode == ThemeMode.light
                                 ? FontWeight.w600
                                 : FontWeight.normal,
                           ),
@@ -115,7 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Icon(
                           Icons.dark_mode_rounded,
-                          color: widget.themeService.themeMode == ThemeMode.dark
+                          color: themeMode == ThemeMode.dark
                               ? Theme.of(context).colorScheme.primary
                               : null,
                         ),
@@ -123,7 +154,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Text(
                           'Dark',
                           style: TextStyle(
-                            fontWeight: widget.themeService.themeMode == ThemeMode.dark
+                            fontWeight: themeMode == ThemeMode.dark
                                 ? FontWeight.w600
                                 : FontWeight.normal,
                           ),
@@ -137,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Icon(
                           Icons.brightness_auto_rounded,
-                          color: widget.themeService.themeMode == ThemeMode.system
+                          color: themeMode == ThemeMode.system
                               ? Theme.of(context).colorScheme.primary
                               : null,
                         ),
@@ -145,7 +176,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Text(
                           'System',
                           style: TextStyle(
-                            fontWeight: widget.themeService.themeMode == ThemeMode.system
+                            fontWeight: themeMode == ThemeMode.system
                                 ? FontWeight.w600
                                 : FontWeight.normal,
                           ),

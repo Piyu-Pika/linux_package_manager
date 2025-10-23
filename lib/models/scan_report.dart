@@ -1,3 +1,5 @@
+import 'security_provider.dart';
+
 class StoredScanReport {
   final String filePath;
   final String fileName;
@@ -9,6 +11,7 @@ class StoredScanReport {
   final List<String> detectedThreats;
   final String permalink;
   final bool userAcceptedRisk;
+  final SecurityProvider? provider; // Added provider information
 
   StoredScanReport({
     required this.filePath,
@@ -21,6 +24,7 @@ class StoredScanReport {
     required this.detectedThreats,
     required this.permalink,
     this.userAcceptedRisk = false,
+    this.provider,
   });
 
   factory StoredScanReport.fromVirusTotalReport(
@@ -54,10 +58,20 @@ class StoredScanReport {
       'detectedThreats': detectedThreats,
       'permalink': permalink,
       'userAcceptedRisk': userAcceptedRisk,
+      'provider': provider?.index,
     };
   }
 
   factory StoredScanReport.fromJson(Map<String, dynamic> json) {
+    SecurityProvider? provider;
+    if (json['provider'] != null) {
+      try {
+        provider = SecurityProvider.values[json['provider']];
+      } catch (e) {
+        provider = null; // Default to null if invalid index
+      }
+    }
+
     return StoredScanReport(
       filePath: json['filePath'] ?? '',
       fileName: json['fileName'] ?? '',
@@ -69,6 +83,7 @@ class StoredScanReport {
       detectedThreats: List<String>.from(json['detectedThreats'] ?? []),
       permalink: json['permalink'] ?? '',
       userAcceptedRisk: json['userAcceptedRisk'] ?? false,
+      provider: provider,
     );
   }
 
@@ -83,6 +98,7 @@ class StoredScanReport {
     List<String>? detectedThreats,
     String? permalink,
     bool? userAcceptedRisk,
+    SecurityProvider? provider,
   }) {
     return StoredScanReport(
       filePath: filePath ?? this.filePath,
@@ -95,6 +111,7 @@ class StoredScanReport {
       detectedThreats: detectedThreats ?? this.detectedThreats,
       permalink: permalink ?? this.permalink,
       userAcceptedRisk: userAcceptedRisk ?? this.userAcceptedRisk,
+      provider: provider ?? this.provider,
     );
   }
 

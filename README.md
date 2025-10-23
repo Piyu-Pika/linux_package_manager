@@ -1,82 +1,65 @@
-# PackageArmor
+# 🛡️ Package Armor
 
-A comprehensive Flutter desktop application for installing and managing Linux packages from multiple sources. This advanced package manager supports various package formats and repositories, making it easy to install software on any Linux distribution.
+**The Ultimate Secure Package Manager for Linux**
 
-## Features
+Package Armor is a modern, Flutter-based package manager that provides enterprise-grade security scanning and comprehensive package management across multiple Linux distributions and package sources.
 
-### 🔍 **Multi-Source Package Search**
-- **APT Repository**: Search and install packages from APT repositories
-- **Snap Store**: Browse and install Snap packages
-- **Flatpak**: Access Flatpak applications
-- **GitHub Releases**: Install software directly from GitHub releases
-- **Custom URLs**: Download and install packages from any URL
+![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)
+![Dart](https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white)
+![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 
-### 📦 **Comprehensive Package Format Support**
-- **.deb** packages (Debian/Ubuntu)
-- **.rpm** packages (Red Hat/Fedora/SUSE)
-- **.pkg** packages (Arch Linux)
-- **.tar.gz/.tar.xz** archives with install scripts
-- **AppImage** portable applications
-- **Direct downloads** from URLs
+## ✨ Features
 
-### 🛠️ **Advanced Installation Features**
-- **Automatic dependency resolution** for supported formats
-- **Installation progress tracking** with detailed logs
-- **Installation time measurement**
-- **Rollback support** for failed installations
-- **Batch installation** capabilities
-- **🦠 VirusTotal Integration** for virus scanning before installation
-- **Security risk warnings** with delayed confirmation for unsafe files
-- **Scan result caching** to avoid repeated scans
+### 🔒 **Multi-Provider Security Scanning**
+- **VirusTotal Integration**: 70+ antivirus engines for comprehensive malware detection
+- **Hybrid Analysis**: Advanced behavioral analysis and sandboxing for zero-day threats
+- **MetaDefender**: Enterprise-grade security with data sanitization capabilities
+- **Smart Provider Selection**: Choose the best security provider for your needs
+- **Real-time Threat Detection**: Scan packages before installation automatically
 
-### 📱 **Modern User Interface**
-- **Material Design 3** with enhanced theming and modern color schemes
-- **Responsive layout** with adaptive navigation (rail for desktop, bottom bar for mobile)
-- **Improved visual hierarchy** with better spacing and typography
-- **Enhanced cards and components** with subtle borders and improved contrast
-- **Better user feedback** with loading states, empty states, and progress indicators
-- **Polished dialogs and interactions** with modern button styles and animations
-- **Intuitive iconography** with rounded icons and consistent visual language
-- **Real-time search** with advanced filtering and source selection
-- **Installation progress dialogs** with live output and better status indicators
+### 📦 **Universal Package Management**
+- **Multi-Source Support**: APT, Snap, Flatpak, GitHub releases, and local files
+- **Intelligent Updates**: One-click updates for individual packages or system-wide
+- **Smart Uninstall**: Safe removal with dependency checking
+- **Package Discovery**: Search and discover packages from multiple sources
+- **System Cleanup**: Remove orphaned packages and clean cache
 
-### ⚙️ **System Integration**
-- **Automatic system detection** (distribution, architecture, available package managers)
-- **Privilege escalation** using pkexec for secure installations
-- **Desktop integration** for AppImages
-- **Settings persistence** with SharedPreferences
+### 🐙 **Advanced GitHub Integration**
+- **Smart Asset Detection**: Automatically finds the best package for your architecture
+- **Release Management**: Browse and install from GitHub releases
+- **Architecture Matching**: Supports x86_64, ARM64, ARMv7, and i386
+- **Format Prioritization**: Prefers .deb > .appimage > .tar.gz > .rpm based on your system
 
-### 🔧 **Configuration & Settings**
-- **Default package manager** selection
-- **Auto-update package lists**
-- **Installation confirmation** settings
-- **System package visibility** toggle
-- **Cache management**
+### 🎨 **Modern User Interface**
+- **Material 3 Design**: Beautiful, responsive interface with dark/light themes
+- **Real-time Updates**: Live progress tracking and status updates
+- **Security Dashboard**: Comprehensive scan reports and threat analysis
+- **Multi-platform**: Optimized for desktop and mobile screens
 
-## Supported Linux Distributions
-
-This application works on any Linux distribution with the following package managers:
-- **Debian/Ubuntu**: APT (.deb packages)
-- **Fedora/RHEL/CentOS**: DNF/YUM (.rpm packages)
-- **Arch Linux/Manjaro**: Pacman (.pkg packages)
-- **openSUSE**: Zypper (.rpm packages)
-- **Universal**: Snap, Flatpak, AppImage
-
-## Installation
+## 🚀 Quick Start
 
 ### Prerequisites
-- Flutter SDK (3.0.0 or higher)
-- Linux desktop environment
-- `pkexec` for privilege escalation (usually pre-installed)
+- Linux distribution (Ubuntu, Debian, Fedora, Arch, etc.)
+- Flutter 3.0+ (for development)
 
-### Build from Source
+### Installation
+
+#### Option 1: Download Release (Recommended)
+1. Go to [Releases](https://github.com/Piyu-Pika/linux_package_manager/releases)
+2. Download the latest `.deb`, `.rpm`, or `.AppImage` for your system
+3. Install using your package manager or run the AppImage
+
+#### Option 2: Build from Source
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/Piyu-Pika/linux_package_manager.git
 cd linux_package_manager
 
-# Get dependencies
+# Install dependencies
 flutter pub get
+
+# Generate code
+dart run build_runner build
 
 # Build for Linux
 flutter build linux
@@ -85,79 +68,181 @@ flutter build linux
 ./build/linux/x64/release/bundle/linux_package_manager
 ```
 
-### Dependencies
-The app will automatically detect and use available package managers on your system:
-- `apt` - for Debian/Ubuntu packages
-- `dnf`/`yum` - for RPM-based distributions
-- `pacman` - for Arch Linux
-- `snap` - for Snap packages
-- `flatpak` - for Flatpak applications
+## 🔧 Configuration
 
-### VirusTotal Integration (Optional)
-For virus scanning functionality:
-1. Get a free API key from [VirusTotal.com](https://www.virustotal.com/)
-2. Configure it in **Settings** → **Security & Virus Scanning**
-3. See `VIRUSTOTAL_SETUP.md` for detailed setup instructions
+### Security Provider Setup
 
-## Usage
+linux_package_manager supports three security providers. Choose the one that best fits your needs:
 
-### 1. Search and Install Packages
-- Use the **Search** tab to find packages across multiple sources
-- Filter by package source (APT, Snap, Flatpak, GitHub)
-- Click **Install** to download and install packages automatically
+#### 🦠 **VirusTotal** (Recommended for most users)
+- **Best for**: General users, developers, quick malware detection
+- **Strengths**: 70+ engines, large community database, free tier available
+- **Setup**: 
+  1. Visit [virustotal.com](https://www.virustotal.com)
+  2. Create a free account
+  3. Get your API key from Profile → API Key
+  4. Configure in linux_package_manager Settings
 
-### 2. Install Local Package Files
-- Use the **Install** tab to select local package files
-- Supports .deb, .rpm, .pkg, .tar.gz, and .AppImage files
-- View real-time installation logs
+#### 🔬 **Hybrid Analysis** (For security professionals)
+- **Best for**: Security researchers, advanced threat analysis, zero-day detection
+- **Strengths**: Behavioral analysis, sandboxing, detailed execution reports
+- **Setup**:
+  1. Visit [hybrid-analysis.com](https://www.hybrid-analysis.com)
+  2. Register for an account
+  3. Generate API key from Profile
+  4. Configure in linux_package_manager Settings
 
-### 3. Manage Installed Packages
-- View all installed packages in the **Installed Apps** tab
-- Search and filter installed packages
-- Uninstall packages with confirmation dialogs
-- Toggle system package visibility
+#### 🏢 **MetaDefender** (For enterprises)
+- **Best for**: Enterprise environments, regulated industries, compliance
+- **Strengths**: 30+ engines, data sanitization, enterprise features
+- **Setup**:
+  1. Visit [metadefender.opswat.com](https://metadefender.opswat.com)
+  2. Sign up for an account
+  3. Create API key from API section
+  4. Configure in linux_package_manager Settings
 
-### 4. Configure Settings
-- Access **Settings** to customize the application behavior
-- Set default package manager
-- Configure installation preferences
-- View system information
+### Provider Comparison
 
-## Architecture
+| Feature | VirusTotal | Hybrid Analysis | MetaDefender |
+|---------|------------|-----------------|--------------|
+| **Engines** | 70+ | 1 (Behavioral) | 30+ |
+| **Free File Size** | 32MB | 100MB | 50MB |
+| **Analysis Type** | Static | Dynamic/Behavioral | Static + DLP |
+| **Scan Speed** | Fast (1-2 min) | Slow (5-15 min) | Medium (2-5 min) |
+| **Zero-day Detection** | Good | Excellent | Good |
+| **Enterprise Features** | Limited | Advanced | Comprehensive |
+| **Best For** | General Use | Research/Analysis | Enterprise |
 
-### Core Components
-- **Models**: Data structures for packages, installation results, and sources
-- **Services**: Business logic for package management, search, and system detection
-- **Screens**: UI components for different app sections
-- **Enhanced Installer**: Advanced installation engine with multi-format support
+## 📱 Usage
 
-### Key Services
-- `SystemDetector`: Detects Linux distribution and available package managers
-- `PackageSearchService`: Searches packages across multiple sources
-- `EnhancedPackageInstaller`: Handles installation of various package formats
-- `PackageManager`: Manages installed packages and uninstallation
+### Installing Packages
 
-## Security
+1. **Search & Discover**: Use the Discover tab to find packages
+2. **Security Scan**: Packages are automatically scanned before installation
+3. **Smart Installation**: linux_package_manager chooses the best installation method
+4. **Progress Tracking**: Real-time installation progress and logs
 
-- Uses `pkexec` for secure privilege escalation
-- No hardcoded credentials or API keys
-- Validates package integrity before installation
-- Sandboxed installation processes
+### Managing Installed Packages
 
-## Contributing
+1. **View Installed**: See all packages with update indicators
+2. **Update Packages**: One-click updates for individual or all packages
+3. **Uninstall Safely**: Remove packages with dependency checking
+4. **System Cleanup**: Clean cache and remove orphaned packages
+
+### Security Reports
+
+1. **Scan History**: View all security scans in the Security tab
+2. **Threat Analysis**: Detailed threat information and risk assessment
+3. **Provider Comparison**: See results from different security providers
+4. **Export Reports**: Share scan results and security assessments
+
+## 🛠️ Development
+
+### Project Structure
+```
+lib/
+├── config/          # API and configuration management
+├── models/          # Data models and enums
+├── providers/       # Riverpod state management
+├── screens/         # UI screens and pages
+└── services/        # Business logic and API services
+```
+
+### Key Technologies
+- **Flutter**: Cross-platform UI framework
+- **Riverpod**: State management and dependency injection
+- **Dio**: HTTP client for API requests
+- **SharedPreferences**: Local data persistence
+- **Material 3**: Modern design system
+
+### Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## License
+### Building
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+```bash
+# Development build
+flutter run -d linux
 
-## Acknowledgments
+# Release build
+flutter build linux --release
 
-- Flutter team for the excellent cross-platform framework
-- Linux package maintainers for their continuous work
-- Open source community for inspiration and feedback
+# Generate code (after model changes)
+dart run build_runner build --delete-conflicting-outputs
+```
+
+## 🔐 Security Features
+
+### Threat Detection
+- **Multi-Engine Scanning**: Up to 70+ antivirus engines
+- **Behavioral Analysis**: Dynamic malware detection
+- **Zero-day Protection**: Advanced threat detection capabilities
+- **Risk Assessment**: Clear risk levels (Clean, Suspicious, Malicious)
+
+### Privacy & Safety
+- **Local Processing**: Package management happens locally
+- **Secure APIs**: All security providers use encrypted connections
+- **No Data Collection**: linux_package_manager doesn't collect personal data
+- **Open Source**: Full transparency in security implementations
+
+## 📊 Supported Platforms
+
+### Linux Distributions
+- ✅ Ubuntu / Debian (APT)
+- ✅ Fedora / RHEL / CentOS (DNF/YUM)
+- ✅ Arch Linux (Pacman)
+- ✅ openSUSE (Zypper)
+- ✅ Any Linux with Snap/Flatpak
+
+### Package Formats
+- ✅ `.deb` (Debian packages)
+- ✅ `.rpm` (Red Hat packages)
+- ✅ `.pkg.tar.xz` (Arch packages)
+- ✅ `.appimage` (Universal Linux apps)
+- ✅ `.tar.gz/.tar.xz` (Source archives)
+- ✅ Snap packages
+- ✅ Flatpak applications
+
+### Architectures
+- ✅ x86_64 (AMD64)
+- ✅ ARM64 (AArch64)
+- ✅ ARMv7 (ARM32)
+- ✅ i386 (32-bit x86)
+
+## 🤝 Community
+
+### Support
+- 📖 [Documentation](https://github.com/Piyu-Pika/linux_package_manager/wiki)
+- 🐛 [Issue Tracker](https://github.com/Piyu-Pika/linux_package_manager/issues)
+- 💬 [Discussions](https://github.com/Piyu-Pika/linux_package_manager/discussions)
+
+### Security
+- 🔒 [Security Policy](SECURITY.md)
+- 🚨 [Report Vulnerabilities](mailto:security@linux_package_manager.dev)
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **VirusTotal** for their comprehensive malware detection API
+- **Hybrid Analysis** for advanced behavioral analysis capabilities
+- **MetaDefender** for enterprise-grade security features
+- **Flutter Team** for the amazing cross-platform framework
+- **Linux Community** for the diverse ecosystem of package managers
+
+---
+
+<div align="center">
+
+**Made with ❤️ for the Linux Community**
+
+[⭐ Star this project](https://github.com/Piyu-Pika/linux_package_manager) • [🐛 Report Bug](https://github.com/Piyu-Pika/linux_package_manager/issues) • [✨ Request Feature](https://github.com/Piyu-Pika/linux_package_manager/issues)
+
+</div>

@@ -1,0 +1,11 @@
+Package: package_armor
+Version: 1.0.0
+Section: utils
+Priority: optional
+Architecture: amd64
+Depends: libc6, libgtk-3-0, libblkid1, liblzma5
+Maintainer: Flutter Developer <developer@example.com>
+Description: Flutter Linux desktop application
+ Flutter Linux desktop application
+ Built with Flutter for Linux desktop.
+

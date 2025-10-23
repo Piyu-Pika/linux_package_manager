@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/system_detector.dart';
-import '../services/theme_service.dart';
+import '../providers/theme_provider.dart';
 import '../config/api_config.dart';
+import '../models/security_provider.dart';
+import 'security_provider_selection_screen.dart';
 
-class SettingsScreen extends StatefulWidget {
-  final ThemeService themeService;
-  
-  const SettingsScreen({super.key, required this.themeService});
+class SettingsScreen extends ConsumerStatefulWidget {
+  const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _autoUpdatePackageList = true;
   bool _confirmBeforeInstall = true;
   bool _showSystemPackages = false;
@@ -21,6 +22,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _enableVirusScanning = true;
   String _defaultPackageManager = 'apt';
   String _virusTotalApiKey = '';
+  SecurityProvider _selectedProvider = SecurityProvider.virusTotal;
   List<String> _availableManagers = [];
   String _distribution = 'unknown';
   String _architecture = 'unknown';
@@ -44,6 +46,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final prefs = await SharedPreferences.getInstance();
     final apiKey = await ApiConfig.getVirusTotalApiKey();
     final virusScanningEnabled = await ApiConfig.isVirusScanningEnabled();
+    final selectedProvider = await ApiConfig.getSelectedProvider();
     
     setState(() {
       _autoUpdatePackageList = prefs.getBool('auto_update_package_list') ?? true;
@@ -53,6 +56,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _defaultPackageManager = prefs.getString('default_package_manager') ?? 'apt';
       _enableVirusScanning = virusScanningEnabled;
       _virusTotalApiKey = apiKey;
+      _selectedProvider = selectedProvider;
       _apiKeyController.text = apiKey;
     });
   }
@@ -172,22 +176,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Row(
                   children: [
                     Icon(
-                      ApiConfig.isValidApiKeyFormat(_apiKeyController.text)
+                      SecurityProvider.virusTotal.validateApiKeyFormat(_apiKeyController.text)
                           ? Icons.check_circle
                           : Icons.error,
-                      color: ApiConfig.isValidApiKeyFormat(_apiKeyController.text)
+                      color: SecurityProvider.virusTotal.validateApiKeyFormat(_apiKeyController.text)
                           ? Colors.green
                           : Colors.red,
                       size: 16,
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      ApiConfig.isValidApiKeyFormat(_apiKeyController.text)
+                      SecurityProvider.virusTotal.validateApiKeyFormat(_apiKeyController.text)
                           ? 'Valid API key format'
                           : 'Invalid API key format (should be 64 hex characters)',
                       style: TextStyle(
                         fontSize: 12,
-                        color: ApiConfig.isValidApiKeyFormat(_apiKeyController.text)
+                        color: SecurityProvider.virusTotal.validateApiKeyFormat(_apiKeyController.text)
                             ? Colors.green
                             : Colors.red,
                       ),
@@ -475,7 +479,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   _buildSwitchTile(
                     'Enable Virus Scanning',
-                    'Scan packages with VirusTotal before installation',
+                    'Scan packages before installation with your chosen security provider',
                     Icons.shield_rounded,
                     _enableVirusScanning,
                     (value) async {
@@ -487,6 +491,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   
                   if (_enableVirusScanning) ...[
+                    const Divider(height: 32),
+                    
+                    // Security Provider Selection
+                    ListTile(
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.security_rounded,
+                          color: Colors.blue,
+                          size: 20,
+                        ),
+                      ),
+                      title: const Text('Security Provider'),
+                      subtitle: Text(
+                        'Currently using ${_selectedProvider.name}\n${_selectedProvider.description}',
+                      ),
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () async {
+                        final result = await Navigator.push<bool>(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SecurityProviderSelectionScreen(),
+                          ),
+                        );
+                        if (result == true) {
+                          _loadSettings(); // Reload settings after changes
+                        }
+                      },
+                    ),
+                    
                     const Divider(height: 32),
                     
                     ListTile(
@@ -616,9 +654,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.palette_rounded,
                 color: Colors.purple,
                 children: [
-                  AnimatedBuilder(
-                    animation: widget.themeService,
-                    builder: (context, child) {
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final themeMode = ref.watch(themeModeProvider);
+                      final themeNotifier = ref.read(themeModeProvider.notifier);
+                      
+                      IconData getThemeIcon() {
+                        switch (themeMode) {
+                          case ThemeMode.light:
+                            return Icons.light_mode_rounded;
+                          case ThemeMode.dark:
+                            return Icons.dark_mode_rounded;
+                          case ThemeMode.system:
+                            return Icons.brightness_auto_rounded;
+                        }
+                      }
+                      
+                      String getThemeString() {
+                        switch (themeMode) {
+                          case ThemeMode.light:
+                            return 'Light';
+                          case ThemeMode.dark:
+                            return 'Dark';
+                          case ThemeMode.system:
+                            return 'System';
+                        }
+                      }
+                      
                       return ListTile(
                         leading: Container(
                           padding: const EdgeInsets.all(8),
@@ -627,13 +689,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Icon(
-                            widget.themeService.themeModeIcon,
+                            getThemeIcon(),
                             color: Colors.purple,
                             size: 20,
                           ),
                         ),
                         title: const Text('Theme Mode'),
-                        subtitle: Text('Currently using ${widget.themeService.themeModeString} theme'),
+                        subtitle: Text('Currently using ${getThemeString()} theme'),
                         trailing: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           decoration: BoxDecoration(
@@ -644,7 +706,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton<ThemeMode>(
-                              value: widget.themeService.themeMode,
+                              value: themeMode,
                               isDense: true,
                               items: const [
                                 DropdownMenuItem(
@@ -683,7 +745,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ],
                               onChanged: (ThemeMode? mode) {
                                 if (mode != null) {
-                                  widget.themeService.setThemeMode(mode);
+                                  themeNotifier.setThemeMode(mode);
                                 }
                               },
                             ),

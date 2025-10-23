@@ -1,6 +1,8 @@
 import 'dart:io';
 import '../models/installed_package.dart';
 import '../models/installation_result.dart';
+import '../models/package_info.dart';
+import '../models/package_source.dart';
 import 'system_detector.dart';
 
 class PackageManager {
@@ -189,6 +191,333 @@ class PackageManager {
         success: false,
         output: '',
         error: 'Purge failed: $e',
+      );
+    }
+  }
+
+  /// Update a specific package
+  Future<InstallationResult> updatePackage(String packageName, {String source = 'apt'}) async {
+    final startTime = DateTime.now();
+    
+    try {
+      ProcessResult result;
+      
+      switch (source) {
+        case 'snap':
+          result = await Process.run('pkexec', ['snap', 'refresh', packageName]);
+          break;
+        case 'flatpak':
+          result = await Process.run('pkexec', ['flatpak', 'update', '-y', packageName]);
+          break;
+        case 'apt':
+        default:
+          // Update package list first
+          await Process.run('pkexec', ['apt', 'update']);
+          result = await Process.run('pkexec', ['apt', 'install', '--only-upgrade', '-y', packageName]);
+          break;
+      }
+      
+      return InstallationResult(
+        success: result.exitCode == 0,
+        output: result.stdout.toString(),
+        error: result.exitCode != 0 ? result.stderr.toString() : '',
+        packageName: packageName,
+        installTime: DateTime.now().difference(startTime),
+      );
+    } catch (e) {
+      return InstallationResult(
+        success: false,
+        output: '',
+        error: 'Update failed: $e',
+        packageName: packageName,
+        installTime: DateTime.now().difference(startTime),
+      );
+    }
+  }
+
+  /// Update all packages
+  Future<InstallationResult> updateAllPackages({String source = 'apt'}) async {
+    final startTime = DateTime.now();
+    
+    try {
+      ProcessResult result;
+      
+      switch (source) {
+        case 'snap':
+          result = await Process.run('pkexec', ['snap', 'refresh']);
+          break;
+        case 'flatpak':
+          result = await Process.run('pkexec', ['flatpak', 'update', '-y']);
+          break;
+        case 'apt':
+        default:
+          // Update package list first
+          await Process.run('pkexec', ['apt', 'update']);
+          result = await Process.run('pkexec', ['apt', 'upgrade', '-y']);
+          break;
+      }
+      
+      return InstallationResult(
+        success: result.exitCode == 0,
+        output: result.stdout.toString(),
+        error: result.exitCode != 0 ? result.stderr.toString() : '',
+        installTime: DateTime.now().difference(startTime),
+      );
+    } catch (e) {
+      return InstallationResult(
+        success: false,
+        output: '',
+        error: 'System update failed: $e',
+        installTime: DateTime.now().difference(startTime),
+      );
+    }
+  }
+
+  /// Get detailed information about a package
+  Future<PackageInfo?> getPackageDetails(String packageName, {String source = 'apt'}) async {
+    try {
+      switch (source) {
+        case 'snap':
+          return await _getSnapPackageDetails(packageName);
+        case 'flatpak':
+          return await _getFlatpakPackageDetails(packageName);
+        case 'apt':
+        default:
+          return await _getAptPackageDetails(packageName);
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<PackageInfo?> _getAptPackageDetails(String packageName) async {
+    try {
+      final result = await Process.run('apt', ['show', packageName]);
+      
+      if (result.exitCode == 0) {
+        return PackageInfo.fromAptShow(result.stdout.toString());
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<PackageInfo?> _getSnapPackageDetails(String packageName) async {
+    try {
+      final result = await Process.run('snap', ['info', packageName]);
+      
+      if (result.exitCode == 0) {
+        final output = result.stdout.toString();
+        final lines = output.split('\n');
+        
+        String name = packageName;
+        String version = '';
+        String description = '';
+        String? homepage;
+        String? maintainer;
+        
+        for (var line in lines) {
+          if (line.startsWith('name:')) {
+            name = line.substring(5).trim();
+          } else if (line.startsWith('version:')) {
+            version = line.substring(8).trim();
+          } else if (line.startsWith('summary:')) {
+            description = line.substring(8).trim();
+          } else if (line.startsWith('website:')) {
+            homepage = line.substring(8).trim();
+          } else if (line.startsWith('publisher:')) {
+            maintainer = line.substring(10).trim();
+          }
+        }
+        
+        return PackageInfo(
+          name: name,
+          version: version,
+          description: description,
+          homepage: homepage,
+          maintainer: maintainer,
+          source: PackageSource.snap,
+        );
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<PackageInfo?> _getFlatpakPackageDetails(String packageName) async {
+    try {
+      final result = await Process.run('flatpak', ['info', packageName]);
+      
+      if (result.exitCode == 0) {
+        final output = result.stdout.toString();
+        final lines = output.split('\n');
+        
+        String name = packageName;
+        String version = '';
+        String description = '';
+        
+        for (var line in lines) {
+          if (line.contains('ID:')) {
+            name = line.split(':').last.trim();
+          } else if (line.contains('Version:')) {
+            version = line.split(':').last.trim();
+          } else if (line.contains('Description:')) {
+            description = line.split(':').last.trim();
+          }
+        }
+        
+        return PackageInfo(
+          name: name,
+          version: version,
+          description: description,
+          source: PackageSource.flatpak,
+        );
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Check for available updates
+  Future<List<String>> getAvailableUpdates({String source = 'apt'}) async {
+    try {
+      switch (source) {
+        case 'snap':
+          return await _getSnapUpdates();
+        case 'flatpak':
+          return await _getFlatpakUpdates();
+        case 'apt':
+        default:
+          return await _getAptUpdates();
+      }
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<List<String>> _getAptUpdates() async {
+    try {
+      // Update package list
+      await Process.run('apt', ['update']);
+      
+      final result = await Process.run('apt', ['list', '--upgradable']);
+      
+      if (result.exitCode == 0) {
+        final lines = result.stdout.toString().split('\n');
+        final updates = <String>[];
+        
+        for (var line in lines) {
+          if (line.contains('[upgradable from:')) {
+            final packageName = line.split('/').first.trim();
+            if (packageName.isNotEmpty && packageName != 'Listing...') {
+              updates.add(packageName);
+            }
+          }
+        }
+        
+        return updates;
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<List<String>> _getSnapUpdates() async {
+    try {
+      final result = await Process.run('snap', ['refresh', '--list']);
+      
+      if (result.exitCode == 0) {
+        final lines = result.stdout.toString().split('\n');
+        final updates = <String>[];
+        
+        for (var line in lines) {
+          if (line.trim().isNotEmpty && !line.startsWith('Name')) {
+            final parts = line.split(RegExp(r'\s+'));
+            if (parts.isNotEmpty) {
+              updates.add(parts[0]);
+            }
+          }
+        }
+        
+        return updates;
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<List<String>> _getFlatpakUpdates() async {
+    try {
+      final result = await Process.run('flatpak', ['remote-ls', '--updates']);
+      
+      if (result.exitCode == 0) {
+        final lines = result.stdout.toString().split('\n');
+        final updates = <String>[];
+        
+        for (var line in lines) {
+          if (line.trim().isNotEmpty) {
+            final parts = line.split('\t');
+            if (parts.length >= 2) {
+              updates.add(parts[1].trim());
+            }
+          }
+        }
+        
+        return updates;
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /// Clean package cache and remove orphaned packages
+  Future<InstallationResult> cleanSystem({String source = 'apt'}) async {
+    final startTime = DateTime.now();
+    
+    try {
+      ProcessResult result;
+      
+      switch (source) {
+        case 'snap':
+          // Snap doesn't have a traditional clean command
+          result = ProcessResult(0, 0, 'Snap packages are automatically cleaned', '');
+          break;
+        case 'flatpak':
+          result = await Process.run('pkexec', ['flatpak', 'uninstall', '--unused', '-y']);
+          break;
+        case 'apt':
+        default:
+          // Clean package cache and remove orphaned packages
+          final cleanResult = await Process.run('pkexec', ['apt', 'clean']);
+          final autoremoveResult = await Process.run('pkexec', ['apt', 'autoremove', '-y']);
+          
+          result = ProcessResult(
+            0,
+            cleanResult.exitCode == 0 && autoremoveResult.exitCode == 0 ? 0 : 1,
+            '${cleanResult.stdout}\n${autoremoveResult.stdout}',
+            '${cleanResult.stderr}\n${autoremoveResult.stderr}',
+          );
+          break;
+      }
+      
+      return InstallationResult(
+        success: result.exitCode == 0,
+        output: result.stdout.toString(),
+        error: result.exitCode != 0 ? result.stderr.toString() : '',
+        installTime: DateTime.now().difference(startTime),
+      );
+    } catch (e) {
+      return InstallationResult(
+        success: false,
+        output: '',
+        error: 'System cleanup failed: $e',
+        installTime: DateTime.now().difference(startTime),
       );
     }
   }

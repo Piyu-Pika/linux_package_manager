@@ -1,30 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'screens/home_screen.dart';
-import 'services/theme_service.dart';
+import 'providers/theme_provider.dart';
 
 void main() {
-  runApp(LinuxPackageManagerApp());
+  runApp(
+    ProviderScope(
+      child: LinuxPackageManagerApp(),
+    ),
+  );
 }
 
-class LinuxPackageManagerApp extends StatelessWidget {
-  final ThemeService _themeService = ThemeService();
-
-  LinuxPackageManagerApp({super.key});
+class LinuxPackageManagerApp extends ConsumerWidget {
+  const LinuxPackageManagerApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _themeService,
-      builder: (context, child) {
-        return MaterialApp(
-          title: 'PackageArmor Package Manager',
-          debugShowCheckedModeBanner: false,
-          theme: _buildLightTheme(),
-          darkTheme: _buildDarkTheme(),
-          themeMode: _themeService.themeMode,
-          home: HomeScreen(themeService: _themeService),
-        );
-      },
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeModeProvider);
+    
+    return MaterialApp(
+      title: 'PackageArmor Package Manager',
+      debugShowCheckedModeBanner: false,
+      theme: _buildLightTheme(),
+      darkTheme: _buildDarkTheme(),
+      themeMode: themeMode,
+      home: const HomeScreen(),
     );
   }
 

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:crypto/crypto.dart';
 import '../config/api_config.dart';
+import '../models/security_provider.dart';
 
 class VirusTotalService {
   final Dio _dio = Dio();
@@ -12,14 +13,17 @@ class VirusTotalService {
   }
 
   /// Check if VirusTotal API is properly configured
-  Future<bool> isConfigured() async => await ApiConfig.isApiKeyConfigured();
+  Future<bool> isConfigured() async =>
+      await ApiConfig.isProviderConfigured(SecurityProvider.virusTotal);
 
   /// Check if file is eligible for scanning (size limit)
   Future<bool> isFileEligibleForScanning(String filePath) async {
     try {
       final file = File(filePath);
       final fileSize = await file.length();
-      return fileSize <= ApiConfig.maxFileSizeForScanning;
+      final maxSize = await ApiConfig.getMaxFileSizeForProvider(
+          SecurityProvider.virusTotal);
+      return fileSize <= maxSize;
     } catch (e) {
       return false;
     }
@@ -49,12 +53,12 @@ class VirusTotalService {
     if (!await isConfigured()) {
       throw VirusTotalException('VirusTotal API key not configured');
     }
-    
-    final apiKey = await ApiConfig.getVirusTotalApiKey();
-    
+
+    final apiKey = await ApiConfig.getApiKey(SecurityProvider.virusTotal);
+
     try {
       final response = await _dio.get(
-        '${ApiConfig.virusTotalBaseUrl}/file/report',
+        '${SecurityProvider.virusTotal.baseUrl}/file/report',
         queryParameters: {
           'apikey': apiKey,
           'resource': fileHash,
@@ -78,20 +82,20 @@ class VirusTotalService {
     if (!await isConfigured()) {
       throw VirusTotalException('VirusTotal API key not configured');
     }
-    
-    final apiKey = await ApiConfig.getVirusTotalApiKey();
-    
+
+    final apiKey = await ApiConfig.getApiKey(SecurityProvider.virusTotal);
+
     try {
       final file = File(filePath);
       final fileName = file.path.split('/').last;
-      
+
       final formData = FormData.fromMap({
         'apikey': apiKey,
         'file': await MultipartFile.fromFile(filePath, filename: fileName),
       });
 
       final response = await _dio.post(
-        '${ApiConfig.virusTotalBaseUrl}/file/scan',
+        '${SecurityProvider.virusTotal.baseUrl}/file/scan',
         data: formData,
       );
 
@@ -103,7 +107,8 @@ class VirusTotalService {
           throw VirusTotalException(data['verbose_msg'] ?? 'Upload failed');
         }
       } else {
-        throw VirusTotalException('Upload failed with status: ${response.statusCode}');
+        throw VirusTotalException(
+            'Upload failed with status: ${response.statusCode}');
       }
     } catch (e) {
       if (e is VirusTotalException) rethrow;
@@ -116,12 +121,12 @@ class VirusTotalService {
     if (!await isConfigured()) {
       throw VirusTotalException('VirusTotal API key not configured');
     }
-    
-    final apiKey = await ApiConfig.getVirusTotalApiKey();
-    
+
+    final apiKey = await ApiConfig.getApiKey(SecurityProvider.virusTotal);
+
     try {
       final response = await _dio.get(
-        '${ApiConfig.virusTotalBaseUrl}/file/report',
+        '${SecurityProvider.virusTotal.baseUrl}/file/report',
         queryParameters: {
           'apikey': apiKey,
           'resource': scanId,
@@ -139,7 +144,8 @@ class VirusTotalService {
           throw VirusTotalException(data['verbose_msg'] ?? 'Report not found');
         }
       } else {
-        throw VirusTotalException('Failed to get report with status: ${response.statusCode}');
+        throw VirusTotalException(
+            'Failed to get report with status: ${response.statusCode}');
       }
     } catch (e) {
       if (e is VirusTotalException) rethrow;
@@ -148,30 +154,33 @@ class VirusTotalService {
   }
 
   /// Poll for scan results with timeout
-  Future<VirusTotalReport> waitForScanResults(String scanId, {
+  Future<VirusTotalReport> waitForScanResults(
+    String scanId, {
     Duration? timeout,
     Duration? pollInterval,
   }) async {
     timeout ??= ApiConfig.scanTimeout;
     pollInterval ??= ApiConfig.pollInterval;
     final startTime = DateTime.now();
-    
+
     while (DateTime.now().difference(startTime) < timeout) {
       final report = await getScanReport(scanId);
       if (report != null) {
         return report;
       }
-      
+
       await Future.delayed(pollInterval);
     }
-    
-    throw VirusTotalException('Scan timeout: Results not available within ${timeout.inMinutes} minutes');
+
+    throw VirusTotalException(
+        'Scan timeout: Results not available within ${timeout.inMinutes} minutes');
   }
 
   String _formatFileSize(int bytes) {
     if (bytes < 1024) return '${bytes}B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)}KB';
-    if (bytes < 1024 * 1024 * 1024) return '${(bytes / (1024 * 1024)).toStringAsFixed(1)}MB';
+    if (bytes < 1024 * 1024 * 1024)
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)}MB';
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)}GB';
   }
 }
@@ -202,7 +211,7 @@ class VirusTotalReport {
   factory VirusTotalReport.fromJson(Map<String, dynamic> json) {
     final scansData = json['scans'] as Map<String, dynamic>? ?? {};
     final scans = <String, ScanResult>{};
-    
+
     for (final entry in scansData.entries) {
       scans[entry.key] = ScanResult.fromJson(entry.value);
     }
@@ -212,7 +221,8 @@ class VirusTotalReport {
       sha256: json['sha256'] ?? '',
       md5: json['md5'] ?? '',
       sha1: json['sha1'] ?? '',
-      scanDate: DateTime.parse(json['scan_date'] ?? DateTime.now().toIso8601String()),
+      scanDate:
+          DateTime.parse(json['scan_date'] ?? DateTime.now().toIso8601String()),
       positives: json['positives'] ?? 0,
       total: json['total'] ?? 0,
       permalink: json['permalink'] ?? '',
@@ -223,9 +233,9 @@ class VirusTotalReport {
   bool get isClean => positives == 0;
   bool get isSuspicious => positives > 0 && positives <= 3;
   bool get isMalicious => positives > 3;
-  
+
   double get detectionRate => total > 0 ? (positives / total) * 100 : 0.0;
-  
+
   String get riskLevel {
     if (isClean) return 'Clean';
     if (isSuspicious) return 'Suspicious';
@@ -265,9 +275,9 @@ class ScanResult {
 
 class VirusTotalException implements Exception {
   final String message;
-  
+
   VirusTotalException(this.message);
-  
+
   @override
   String toString() => 'VirusTotalException: $message';
 }

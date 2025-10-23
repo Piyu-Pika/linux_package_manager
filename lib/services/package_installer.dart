@@ -4,9 +4,15 @@ import 'package:http/http.dart' as http;
 import '../models/installation_result.dart';
 import '../models/package_info.dart';
 import '../models/package_source.dart';
+import '../config/api_config.dart';
 import 'system_detector.dart';
+import 'security_scanner_service.dart';
+import 'scan_report_manager.dart';
 
 class PackageInstaller {
+  final SecurityScannerService _securityScanner = SecurityScannerService();
+  final ScanReportManager _scanReportManager = ScanReportManager();
+
   Future<InstallationResult> installFromUrl(String url, {String? fileName}) async {
     final startTime = DateTime.now();
     
@@ -149,7 +155,7 @@ class PackageInstaller {
     }
   }
 
-  Future<InstallationResult> installPackage(String filePath) async {
+  Future<InstallationResult> installPackage(String filePath, {bool skipVirusScan = false}) async {
     final startTime = DateTime.now();
     final file = File(filePath);
     
@@ -160,6 +166,14 @@ class PackageInstaller {
         error: 'File does not exist',
         installTime: DateTime.now().difference(startTime),
       );
+    }
+
+    // Perform VirusTotal scan if enabled and not skipped
+    if (!skipVirusScan && await ApiConfig.isVirusScanningEnabled()) {
+      final scanResult = await _performVirusScan(filePath);
+      if (scanResult != null && !scanResult.success) {
+        return scanResult;
+      }
     }
 
     final extension = path.extension(filePath).toLowerCase();
@@ -436,5 +450,81 @@ class PackageInstaller {
         installTime: DateTime.now().difference(startTime),
       );
     }
+  }
+
+  /// Perform security scan on the file using selected provider
+  Future<InstallationResult?> _performVirusScan(String filePath) async {
+    try {
+      // Check if security scanner is configured
+      if (!await _securityScanner.isConfigured()) {
+        final provider = await ApiConfig.getSelectedProvider();
+        return InstallationResult(
+          success: false,
+          output: '',
+          error: '${provider.name} API key not configured. Please configure it in Settings.',
+          installTime: Duration.zero,
+        );
+      }
+
+      // Check file size eligibility
+      if (!await _securityScanner.isFileEligibleForScanning(filePath)) {
+        final fileSize = await _securityScanner.getFileSize(filePath);
+        final maxSize = await ApiConfig.getMaxFileSize();
+        final provider = await ApiConfig.getSelectedProvider();
+        return InstallationResult(
+          success: false,
+          output: '',
+          error: 'File too large for scanning ($fileSize). Maximum size: ${_formatFileSize(maxSize)} for ${provider.name}.',
+          installTime: Duration.zero,
+        );
+      }
+
+      // Scan the file with the selected provider
+      final report = await _securityScanner.scanFile(filePath);
+
+      // Store scan report
+      final storedReport = report.toStoredScanReport().copyWith(provider: report.provider);
+      await _scanReportManager.saveScanReport(storedReport);
+
+      // Check if file is safe to install
+      if (report.isMalicious) {
+        return InstallationResult(
+          success: false,
+          output: '${report.provider.name} Scan Results:\n'
+              'Risk Level: ${report.riskLevel}\n'
+              'Detections: ${report.positives}/${report.total}\n'
+              'Detected Threats:\n${report.detectedThreats.join('\n')}',
+          error: 'File flagged as malicious by ${report.provider.name}. Installation blocked for safety.',
+          installTime: Duration.zero,
+        );
+      } else if (report.isSuspicious) {
+        return InstallationResult(
+          success: false,
+          output: '${report.provider.name} Scan Results:\n'
+              'Risk Level: ${report.riskLevel}\n'
+              'Detections: ${report.positives}/${report.total}\n'
+              'Detected Threats:\n${report.detectedThreats.join('\n')}',
+          error: 'File flagged as suspicious by ${report.provider.name}. Please review before installation.',
+          installTime: Duration.zero,
+        );
+      }
+
+      // File is clean, proceed with installation
+      return null;
+    } catch (e) {
+      return InstallationResult(
+        success: false,
+        output: '',
+        error: 'VirusTotal scan failed: $e',
+        installTime: Duration.zero,
+      );
+    }
+  }
+
+  String _formatFileSize(int bytes) {
+    if (bytes < 1024) return '${bytes}B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)}KB';
+    if (bytes < 1024 * 1024 * 1024) return '${(bytes / (1024 * 1024)).toStringAsFixed(1)}MB';
+    return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)}GB';
   }
 }

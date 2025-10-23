@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Package_armor
+Comment=Flutter Linux desktop application
+Exec=/usr/local/lib/package_armor/linux_package_manager
+Icon=/usr/local/lib/package_armor/data/flutter_assets/assets/icon/icon.png
+Terminal=false
+Categories=Utility;
+StartupNotify=true

@@ -42,12 +42,20 @@ dependencies:
   
   # File hashing for VirusTotal
   crypto: ^3.0.3
+  
+  # State management
+  flutter_riverpod: ^2.4.9
+  riverpod_annotation: ^2.3.3
 
 dev_dependencies:
   flutter_launcher_icons: "^0.14.4"
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  
+  # Code generation for Riverpod
+  riverpod_generator: ^2.3.9
+  build_runner: ^2.4.7
   
 
 flutter_launcher_icons:
