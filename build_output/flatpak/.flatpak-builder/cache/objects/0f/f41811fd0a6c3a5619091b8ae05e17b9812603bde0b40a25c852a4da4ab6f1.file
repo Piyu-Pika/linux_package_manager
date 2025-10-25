@@ -1,0 +1,5 @@
+[Runtime]
+name=com.packagearmor.PackageArmor.Debug
+
+[ExtensionOf]
+ref=app/com.packagearmor.PackageArmor/x86_64/master

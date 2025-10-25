@@ -1,0 +1,33 @@
+app-id: com.packagearmor.PackageArmor
+runtime: org.freedesktop.Platform
+runtime-version: '23.08'
+sdk: org.freedesktop.Sdk
+command: package-armor
+finish-args:
+  - --share=ipc
+  - --socket=x11
+  - --socket=wayland
+  - --device=dri
+  - --filesystem=host
+  - --share=network
+  - --talk-name=org.freedesktop.Flatpak
+  - --system-talk-name=org.freedesktop.PackageKit
+modules:
+  - name: package-armor
+    buildsystem: simple
+    build-commands:
+      - mkdir -p /app/bin /app/share/applications /app/share/icons/hicolor/256x256/apps
+      - cp -r bundle/* /app/
+      - install -Dm755 package-armor.sh /app/bin/package-armor
+      - install -Dm644 package-armor.desktop /app/share/applications/com.packagearmor.PackageArmor.desktop
+      - install -Dm644 package-armor-256.png /app/share/icons/hicolor/256x256/apps/com.packagearmor.PackageArmor.png
+    sources:
+      - type: dir
+        path: ../../build/linux/x64/release/bundle
+        dest: bundle
+      - type: file
+        path: package-armor.sh
+      - type: file
+        path: package-armor.desktop
+      - type: file
+        path: package-armor-256.png

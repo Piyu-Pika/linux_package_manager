@@ -1,0 +1,13 @@
+Package: package-armor
+Version: 1.0.0
+Section: utils
+Priority: optional
+Architecture: amd64
+Installed-Size: 52356
+Depends: libc6, libgtk-3-0t64 | libgtk-3-0, libglib2.0-0, libpango-1.0-0, libcairo2, libgdk-pixbuf-2.0-0, libstdc++6
+Maintainer: Piyu-Pika <piyushbhardwaj1603@gmail.com>
+Homepage: https://github.com/Piyu-Pika/linux_package_manager
+Description: An advanced Flutter Linux desktop application for comprehensive package installation and management
+ Package Armor is a comprehensive package management tool for Linux
+ that supports multiple package formats and provides security scanning
+ capabilities for installed packages.
