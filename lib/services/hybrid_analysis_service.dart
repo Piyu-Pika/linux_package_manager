@@ -17,7 +17,8 @@ class HybridAnalysisService {
 
   /// Check if Hybrid Analysis API is properly configured
   Future<bool> isConfigured() async {
-    return await ApiConfig.isProviderConfigured(SecurityProvider.hybridAnalysis);
+    return await ApiConfig.isProviderConfigured(
+        SecurityProvider.hybridAnalysis);
   }
 
   /// Check if file is eligible for scanning (size limit)
@@ -25,7 +26,8 @@ class HybridAnalysisService {
     try {
       final file = File(filePath);
       final fileSize = await file.length();
-      final maxSize = await ApiConfig.getMaxFileSizeForProvider(SecurityProvider.hybridAnalysis);
+      final maxSize = await ApiConfig.getMaxFileSizeForProvider(
+          SecurityProvider.hybridAnalysis);
       return fileSize <= maxSize;
     } catch (e) {
       return false;
@@ -56,9 +58,9 @@ class HybridAnalysisService {
     if (!await isConfigured()) {
       throw HybridAnalysisException('Hybrid Analysis API key not configured');
     }
-    
+
     final apiKey = await ApiConfig.getApiKey(SecurityProvider.hybridAnalysis);
-    
+
     try {
       final response = await _dio.get(
         '${SecurityProvider.hybridAnalysis.baseUrl}/search/hash',
@@ -89,13 +91,13 @@ class HybridAnalysisService {
     if (!await isConfigured()) {
       throw HybridAnalysisException('Hybrid Analysis API key not configured');
     }
-    
+
     final apiKey = await ApiConfig.getApiKey(SecurityProvider.hybridAnalysis);
-    
+
     try {
       final file = File(filePath);
       final fileName = file.path.split('/').last;
-      
+
       final formData = FormData.fromMap({
         'file': await MultipartFile.fromFile(filePath, filename: fileName),
         'environment_id': 300, // Linux Ubuntu 20.04 64-bit
@@ -117,7 +119,8 @@ class HybridAnalysisService {
         final data = response.data;
         return data['job_id'].toString();
       } else {
-        throw HybridAnalysisException('Upload failed with status: ${response.statusCode}');
+        throw HybridAnalysisException(
+            'Upload failed with status: ${response.statusCode}');
       }
     } catch (e) {
       if (e is HybridAnalysisException) rethrow;
@@ -130,9 +133,9 @@ class HybridAnalysisService {
     if (!await isConfigured()) {
       throw HybridAnalysisException('Hybrid Analysis API key not configured');
     }
-    
+
     final apiKey = await ApiConfig.getApiKey(SecurityProvider.hybridAnalysis);
-    
+
     try {
       final response = await _dio.get(
         '${SecurityProvider.hybridAnalysis.baseUrl}/report/$jobId/summary',
@@ -147,14 +150,16 @@ class HybridAnalysisService {
         final data = response.data;
         if (data['state'] == 'SUCCESS') {
           return HybridAnalysisReport.fromJson(data);
-        } else if (data['state'] == 'IN_PROGRESS' || data['state'] == 'IN_QUEUE') {
+        } else if (data['state'] == 'IN_PROGRESS' ||
+            data['state'] == 'IN_QUEUE') {
           // Still processing
           return null;
         } else {
           throw HybridAnalysisException('Analysis failed: ${data['state']}');
         }
       } else {
-        throw HybridAnalysisException('Failed to get report with status: ${response.statusCode}');
+        throw HybridAnalysisException(
+            'Failed to get report with status: ${response.statusCode}');
       }
     } catch (e) {
       if (e is HybridAnalysisException) rethrow;
@@ -163,30 +168,33 @@ class HybridAnalysisService {
   }
 
   /// Poll for scan results with timeout
-  Future<HybridAnalysisReport> waitForScanResults(String jobId, {
+  Future<HybridAnalysisReport> waitForScanResults(
+    String jobId, {
     Duration? timeout,
     Duration? pollInterval,
   }) async {
     timeout ??= ApiConfig.scanTimeout;
     pollInterval ??= ApiConfig.pollInterval;
     final startTime = DateTime.now();
-    
+
     while (DateTime.now().difference(startTime) < timeout) {
       final report = await getScanReport(jobId);
       if (report != null) {
         return report;
       }
-      
+
       await Future.delayed(pollInterval);
     }
-    
-    throw HybridAnalysisException('Scan timeout: Results not available within ${timeout.inMinutes} minutes');
+
+    throw HybridAnalysisException(
+        'Scan timeout: Results not available within ${timeout.inMinutes} minutes');
   }
 
   String _formatFileSize(int bytes) {
     if (bytes < 1024) return '${bytes}B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)}KB';
-    if (bytes < 1024 * 1024 * 1024) return '${(bytes / (1024 * 1024)).toStringAsFixed(1)}MB';
+    if (bytes < 1024 * 1024 * 1024)
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)}MB';
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)}GB';
   }
 }
@@ -220,7 +228,8 @@ class HybridAnalysisReport {
     final malwareList = <String>[];
     if (json['extracted_files'] != null) {
       for (final file in json['extracted_files']) {
-        if (file['threat_level_readable'] != null && file['threat_level_readable'] != 'no specific threat') {
+        if (file['threat_level_readable'] != null &&
+            file['threat_level_readable'] != 'no specific threat') {
           malwareList.add('${file['name']}: ${file['threat_level_readable']}');
         }
       }
@@ -231,7 +240,8 @@ class HybridAnalysisReport {
       sha256: json['sha256'] ?? '',
       md5: json['md5'] ?? '',
       sha1: json['sha1'] ?? '',
-      submitTime: DateTime.parse(json['submit_name'] ?? DateTime.now().toIso8601String()),
+      submitTime: DateTime.parse(
+          json['submit_name'] ?? DateTime.now().toIso8601String()),
       threatScore: json['threat_score'] ?? 0,
       verdict: json['verdict'] ?? 'unknown',
       permalink: json['webif_url'] ?? '',
@@ -240,12 +250,13 @@ class HybridAnalysisReport {
     );
   }
 
-  bool get isClean => threatScore == 0 && verdict.toLowerCase() == 'no specific threat';
+  bool get isClean =>
+      threatScore == 0 && verdict.toLowerCase() == 'no specific threat';
   bool get isSuspicious => threatScore > 0 && threatScore <= 50;
   bool get isMalicious => threatScore > 50;
-  
+
   double get detectionRate => threatScore.toDouble();
-  
+
   String get riskLevel {
     if (isClean) return 'Clean';
     if (isSuspicious) return 'Suspicious';
@@ -269,9 +280,9 @@ class HybridAnalysisReport {
 
 class HybridAnalysisException implements Exception {
   final String message;
-  
+
   HybridAnalysisException(this.message);
-  
+
   @override
   String toString() => 'HybridAnalysisException: $message';
 }

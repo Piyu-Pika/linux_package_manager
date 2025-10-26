@@ -9,7 +9,8 @@ final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
 });
 
 // Provider for app settings
-final appSettingsProvider = StateNotifierProvider<AppSettingsNotifier, AppSettings>((ref) {
+final appSettingsProvider =
+    StateNotifierProvider<AppSettingsNotifier, AppSettings>((ref) {
   return AppSettingsNotifier(ref.read(sharedPreferencesProvider));
 });
 
@@ -40,12 +41,14 @@ class AppSettings {
     String? defaultPackageManager,
   }) {
     return AppSettings(
-      autoUpdatePackageList: autoUpdatePackageList ?? this.autoUpdatePackageList,
+      autoUpdatePackageList:
+          autoUpdatePackageList ?? this.autoUpdatePackageList,
       confirmBeforeInstall: confirmBeforeInstall ?? this.confirmBeforeInstall,
       showSystemPackages: showSystemPackages ?? this.showSystemPackages,
       enableNotifications: enableNotifications ?? this.enableNotifications,
       enableVirusScanning: enableVirusScanning ?? this.enableVirusScanning,
-      defaultPackageManager: defaultPackageManager ?? this.defaultPackageManager,
+      defaultPackageManager:
+          defaultPackageManager ?? this.defaultPackageManager,
     );
   }
 }
@@ -65,7 +68,8 @@ class AppSettingsNotifier extends StateNotifier<AppSettings> {
       showSystemPackages: _prefs.getBool('show_system_packages') ?? false,
       enableNotifications: _prefs.getBool('enable_notifications') ?? true,
       enableVirusScanning: _prefs.getBool('enable_virus_scanning') ?? true,
-      defaultPackageManager: _prefs.getString('default_package_manager') ?? 'apt',
+      defaultPackageManager:
+          _prefs.getString('default_package_manager') ?? 'apt',
     );
   }
 
@@ -101,7 +105,8 @@ class AppSettingsNotifier extends StateNotifier<AppSettings> {
 }
 
 // Example provider for package list state
-final packageListProvider = StateNotifierProvider<PackageListNotifier, PackageListState>((ref) {
+final packageListProvider =
+    StateNotifierProvider<PackageListNotifier, PackageListState>((ref) {
   return PackageListNotifier();
 });
 
@@ -136,11 +141,15 @@ class PackageListNotifier extends StateNotifier<PackageListState> {
 
   Future<void> loadPackages() async {
     state = state.copyWith(isLoading: true, error: null);
-    
+
     try {
       // Simulate loading packages
       await Future.delayed(const Duration(seconds: 2));
-      final packages = ['package1', 'package2', 'package3']; // Replace with actual logic
+      final packages = [
+        'package1',
+        'package2',
+        'package3'
+      ]; // Replace with actual logic
       state = state.copyWith(packages: packages, isLoading: false);
     } catch (e) {
       state = state.copyWith(error: e.toString(), isLoading: false);

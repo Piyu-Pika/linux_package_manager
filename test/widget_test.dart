@@ -14,7 +14,7 @@ import 'package:package_armor/main.dart';
 void main() {
   testWidgets('App launches smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget( LinuxPackageManagerApp());
+    await tester.pumpWidget(LinuxPackageManagerApp());
 
     // Verify that our app title is displayed.
     expect(find.text('Advanced Linux Package Manager'), findsOneWidget);

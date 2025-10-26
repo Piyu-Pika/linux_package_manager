@@ -26,7 +26,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   List<String> _availableManagers = [];
   String _distribution = 'unknown';
   String _architecture = 'unknown';
-  
+
   final TextEditingController _apiKeyController = TextEditingController();
 
   @override
@@ -47,13 +47,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final apiKey = await ApiConfig.getVirusTotalApiKey();
     final virusScanningEnabled = await ApiConfig.isVirusScanningEnabled();
     final selectedProvider = await ApiConfig.getSelectedProvider();
-    
+
     setState(() {
-      _autoUpdatePackageList = prefs.getBool('auto_update_package_list') ?? true;
+      _autoUpdatePackageList =
+          prefs.getBool('auto_update_package_list') ?? true;
       _confirmBeforeInstall = prefs.getBool('confirm_before_install') ?? true;
       _showSystemPackages = prefs.getBool('show_system_packages') ?? false;
       _enableNotifications = prefs.getBool('enable_notifications') ?? true;
-      _defaultPackageManager = prefs.getString('default_package_manager') ?? 'apt';
+      _defaultPackageManager =
+          prefs.getString('default_package_manager') ?? 'apt';
       _enableVirusScanning = virusScanningEnabled;
       _virusTotalApiKey = apiKey;
       _selectedProvider = selectedProvider;
@@ -65,12 +67,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final managers = await SystemDetector.getAvailablePackageManagers();
     final distribution = await SystemDetector.getDistribution();
     final architecture = await SystemDetector.getArchitecture();
-    
+
     setState(() {
       _availableManagers = managers;
       _distribution = distribution;
       _architecture = architecture;
-      
+
       // Set default package manager if current one is not available
       if (!managers.contains(_defaultPackageManager) && managers.isNotEmpty) {
         _defaultPackageManager = managers.first;
@@ -176,22 +178,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 Row(
                   children: [
                     Icon(
-                      SecurityProvider.virusTotal.validateApiKeyFormat(_apiKeyController.text)
+                      SecurityProvider.virusTotal
+                              .validateApiKeyFormat(_apiKeyController.text)
                           ? Icons.check_circle
                           : Icons.error,
-                      color: SecurityProvider.virusTotal.validateApiKeyFormat(_apiKeyController.text)
+                      color: SecurityProvider.virusTotal
+                              .validateApiKeyFormat(_apiKeyController.text)
                           ? Colors.green
                           : Colors.red,
                       size: 16,
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      SecurityProvider.virusTotal.validateApiKeyFormat(_apiKeyController.text)
+                      SecurityProvider.virusTotal
+                              .validateApiKeyFormat(_apiKeyController.text)
                           ? 'Valid API key format'
                           : 'Invalid API key format (should be 64 hex characters)',
                       style: TextStyle(
                         fontSize: 12,
-                        color: SecurityProvider.virusTotal.validateApiKeyFormat(_apiKeyController.text)
+                        color: SecurityProvider.virusTotal
+                                .validateApiKeyFormat(_apiKeyController.text)
                             ? Colors.green
                             : Colors.red,
                       ),
@@ -247,7 +253,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             SizedBox(
               width: 16,
               height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+              child: CircularProgressIndicator(
+                  strokeWidth: 2, color: Colors.white),
             ),
             SizedBox(width: 12),
             Text('Testing API key...'),
@@ -261,7 +268,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       // Test the API key by making a simple request
       // You could implement a test method in VirusTotalService
       await Future.delayed(const Duration(seconds: 2)); // Simulate API call
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
@@ -293,7 +300,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Clear Cache'),
-        content: const Text('This will clear all cached package information. Continue?'),
+        content: const Text(
+            'This will clear all cached package information. Continue?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -310,7 +318,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (confirmed == true) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Cache cleared successfully')),
@@ -327,14 +335,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            borderRadius:const BorderRadius.only(
-              bottomLeft: Radius.circular(16),
-              bottomRight: Radius.circular(16)
-            ),
+            borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(16),
+                bottomRight: Radius.circular(16)),
             color: Theme.of(context).colorScheme.surface,
             border: Border(
               bottom: BorderSide(
-                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+                color: Theme.of(context)
+                    .colorScheme
+                    .outline
+                    .withValues(alpha: 0.2),
               ),
             ),
           ),
@@ -344,20 +354,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Text(
                 'Settings',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                      fontWeight: FontWeight.w600,
+                    ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Configure your package manager preferences',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                ),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.7),
+                    ),
               ),
             ],
           ),
         ),
-        
+
         // Settings content
         Expanded(
           child: ListView(
@@ -369,14 +382,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 icon: Icons.computer_rounded,
                 color: Colors.blue,
                 children: [
-                  _buildInfoTile('Distribution', _distribution.toUpperCase(), Icons.computer_rounded),
-                  _buildInfoTile('Architecture', _architecture, Icons.memory_rounded),
-                  _buildInfoTile('Package Managers', _availableManagers.join(', '), Icons.inventory_2_rounded),
+                  _buildInfoTile('Distribution', _distribution.toUpperCase(),
+                      Icons.computer_rounded),
+                  _buildInfoTile(
+                      'Architecture', _architecture, Icons.memory_rounded),
+                  _buildInfoTile('Package Managers',
+                      _availableManagers.join(', '), Icons.inventory_2_rounded),
                 ],
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Package Management Settings
               _buildSettingsSection(
                 title: 'Package Management',
@@ -391,15 +407,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           color: Colors.green.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        child: const Icon(Icons.star_rounded, color: Colors.green, size: 20),
+                        child: const Icon(Icons.star_rounded,
+                            color: Colors.green, size: 20),
                       ),
                       title: const Text('Default Package Manager'),
                       subtitle: Text('Currently using $_defaultPackageManager'),
                       trailing: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           border: Border.all(
-                            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .outline
+                                .withValues(alpha: 0.3),
                           ),
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -427,7 +448,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                     const Divider(height: 32),
                   ],
-                  
                   _buildSwitchTile(
                     'Auto-update Package List',
                     'Automatically refresh package information',
@@ -440,7 +460,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       _saveSettings();
                     },
                   ),
-                  
                   _buildSwitchTile(
                     'Confirm Before Install',
                     'Show confirmation dialog before installing packages',
@@ -453,7 +472,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       _saveSettings();
                     },
                   ),
-                  
                   _buildSwitchTile(
                     'Show System Packages',
                     'Display system and library packages in lists',
@@ -468,9 +486,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // VirusTotal Settings
               _buildSettingsSection(
                 title: 'Security & Virus Scanning',
@@ -489,10 +507,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       await _saveVirusTotalSettings();
                     },
                   ),
-                  
                   if (_enableVirusScanning) ...[
                     const Divider(height: 32),
-                    
+
                     // Security Provider Selection
                     ListTile(
                       leading: Container(
@@ -516,7 +533,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         final result = await Navigator.push<bool>(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const SecurityProviderSelectionScreen(),
+                            builder: (context) =>
+                                const SecurityProviderSelectionScreen(),
                           ),
                         );
                         if (result == true) {
@@ -524,9 +542,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         }
                       },
                     ),
-                    
+
                     const Divider(height: 32),
-                    
+
                     ListTile(
                       leading: Container(
                         padding: const EdgeInsets.all(8),
@@ -540,7 +558,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           _virusTotalApiKey.isNotEmpty
                               ? Icons.vpn_key_rounded
                               : Icons.key_off_rounded,
-                          color: _virusTotalApiKey.isNotEmpty ? Colors.green : Colors.orange,
+                          color: _virusTotalApiKey.isNotEmpty
+                              ? Colors.green
+                              : Colors.orange,
                           size: 20,
                         ),
                       ),
@@ -568,7 +588,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                       onTap: _showApiKeyDialog,
                     ),
-                    
+
                     if (_virusTotalApiKey.isNotEmpty) ...[
                       const SizedBox(height: 16),
                       Container(
@@ -579,7 +599,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.check_circle, color: Colors.green, size: 16),
+                            const Icon(Icons.check_circle,
+                                color: Colors.green, size: 16),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Column(
@@ -615,7 +636,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.warning, color: Colors.orange, size: 16),
+                            const Icon(Icons.warning,
+                                color: Colors.orange, size: 16),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Column(
@@ -645,9 +667,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ],
                 ],
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Appearance Settings
               _buildSettingsSection(
                 title: 'Appearance',
@@ -657,8 +679,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   Consumer(
                     builder: (context, ref, child) {
                       final themeMode = ref.watch(themeModeProvider);
-                      final themeNotifier = ref.read(themeModeProvider.notifier);
-                      
+                      final themeNotifier =
+                          ref.read(themeModeProvider.notifier);
+
                       IconData getThemeIcon() {
                         switch (themeMode) {
                           case ThemeMode.light:
@@ -669,7 +692,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             return Icons.brightness_auto_rounded;
                         }
                       }
-                      
+
                       String getThemeString() {
                         switch (themeMode) {
                           case ThemeMode.light:
@@ -680,7 +703,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             return 'System';
                         }
                       }
-                      
+
                       return ListTile(
                         leading: Container(
                           padding: const EdgeInsets.all(8),
@@ -695,12 +718,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           ),
                         ),
                         title: const Text('Theme Mode'),
-                        subtitle: Text('Currently using ${getThemeString()} theme'),
+                        subtitle:
+                            Text('Currently using ${getThemeString()} theme'),
                         trailing: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
                           decoration: BoxDecoration(
                             border: Border.all(
-                              color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .outline
+                                  .withValues(alpha: 0.3),
                             ),
                             borderRadius: BorderRadius.circular(16),
                           ),
@@ -736,7 +764,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Icon(Icons.brightness_auto_rounded, size: 16),
+                                      Icon(Icons.brightness_auto_rounded,
+                                          size: 16),
                                       SizedBox(width: 8),
                                       Text('System'),
                                     ],
@@ -756,9 +785,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // App Settings
               _buildSettingsSection(
                 title: 'Application',
@@ -777,9 +806,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       _saveSettings();
                     },
                   ),
-                  
                   const Divider(height: 32),
-                  
                   ListTile(
                     leading: Container(
                       padding: const EdgeInsets.all(8),
@@ -787,7 +814,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         color: Colors.red.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: const Icon(Icons.delete_sweep_rounded, color: Colors.red, size: 20),
+                      child: const Icon(Icons.delete_sweep_rounded,
+                          color: Colors.red, size: 20),
                     ),
                     title: const Text('Clear Cache'),
                     subtitle: const Text('Clear all cached data and settings'),
@@ -796,9 +824,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // About
               _buildSettingsSection(
                 title: 'About',
@@ -811,7 +839,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest
+                          .withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Column(
@@ -822,30 +853,41 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.primaryContainer,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primaryContainer,
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: Icon(
                                 Icons.inventory_2_rounded,
-                                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onPrimaryContainer,
                                 size: 20,
                               ),
                             ),
                             const SizedBox(width: 12),
                             Text(
                               'PackageArmor Package Manager',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 12),
                         Text(
                           'A comprehensive tool for installing and managing Linux packages from multiple sources. Built with Flutter for a modern, cross-platform experience.',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                          ),
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.7),
+                                  ),
                         ),
                       ],
                     ),
@@ -885,8 +927,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 Text(
                   title,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
               ],
             ),
@@ -906,7 +948,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           Icon(
             icon,
             size: 20,
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+            color:
+                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -916,15 +959,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 Text(
                   label,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
+                        fontWeight: FontWeight.w500,
+                      ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   value.isEmpty ? 'Unknown' : value,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                  ),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.7),
+                      ),
                 ),
               ],
             ),
@@ -948,13 +994,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              color: Theme.of(context)
+                  .colorScheme
+                  .surfaceContainerHighest
+                  .withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(
               icon,
               size: 20,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.7),
             ),
           ),
           const SizedBox(width: 12),
@@ -965,15 +1017,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 Text(
                   title,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
+                        fontWeight: FontWeight.w500,
+                      ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                  ),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.7),
+                      ),
                 ),
               ],
             ),
@@ -986,6 +1041,4 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
     );
   }
-
-
 }

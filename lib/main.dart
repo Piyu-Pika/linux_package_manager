@@ -17,7 +17,7 @@ class LinuxPackageManagerApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
-    
+
     return MaterialApp(
       title: 'PackageArmor Package Manager',
       debugShowCheckedModeBanner: false,
@@ -106,7 +106,8 @@ class LinuxPackageManagerApp extends ConsumerWidget {
             width: 2,
           ),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       ),
       chipTheme: ChipThemeData(
         shape: RoundedRectangleBorder(
@@ -195,7 +196,8 @@ class LinuxPackageManagerApp extends ConsumerWidget {
             width: 2,
           ),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       ),
       chipTheme: ChipThemeData(
         shape: RoundedRectangleBorder(

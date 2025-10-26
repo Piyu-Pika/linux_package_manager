@@ -8,6 +8,10 @@ Package Armor is a modern, Flutter-based package manager that provides enterpris
 ![Dart](https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white)
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 
+<p align="center">
+  <img src="assets/image/Screenshot from 2025-10-25 13-03-55.png" alt="Package Armor Screenshot" width="800"/>
+</p>
+
 ## ✨ Features
 
 ### 🔒 **Multi-Provider Security Scanning**

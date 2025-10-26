@@ -8,23 +8,24 @@ import 'system_detector.dart';
 class PackageManager {
   Future<List<InstalledPackage>> getInstalledPackages() async {
     final packages = <InstalledPackage>[];
-    final availableManagers = await SystemDetector.getAvailablePackageManagers();
-    
+    final availableManagers =
+        await SystemDetector.getAvailablePackageManagers();
+
     // Get APT packages
     if (availableManagers.contains('apt')) {
       packages.addAll(await _getAptPackages());
     }
-    
+
     // Get Snap packages
     if (availableManagers.contains('snap')) {
       packages.addAll(await _getSnapPackages());
     }
-    
+
     // Get Flatpak packages
     if (availableManagers.contains('flatpak')) {
       packages.addAll(await _getFlatpakPackages());
     }
-    
+
     // Sort packages by name
     packages.sort((a, b) => a.name.compareTo(b.name));
     return packages;
@@ -36,15 +37,15 @@ class PackageManager {
         '-W',
         r'-f=${Status} ${Package} ${Version} ${Description}\n',
       ]);
-      
+
       if (result.exitCode == 0) {
         final lines = result.stdout.toString().split('\n');
         final packages = <InstalledPackage>[];
-        
+
         for (var line in lines) {
           if (line.trim().isEmpty) continue;
           if (!line.startsWith('install ok installed')) continue;
-          
+
           try {
             final package = InstalledPackage.fromDpkgLine(line);
             if (package.name != 'unknown') {
@@ -55,10 +56,10 @@ class PackageManager {
             continue;
           }
         }
-        
+
         return packages;
       }
-      
+
       return [];
     } catch (e) {
       return [];
@@ -68,16 +69,16 @@ class PackageManager {
   Future<List<InstalledPackage>> _getSnapPackages() async {
     try {
       final result = await Process.run('snap', ['list']);
-      
+
       if (result.exitCode == 0) {
         final lines = result.stdout.toString().split('\n');
         final packages = <InstalledPackage>[];
-        
+
         // Skip header line
         for (int i = 1; i < lines.length; i++) {
           final line = lines[i].trim();
           if (line.isEmpty) continue;
-          
+
           final parts = line.split(RegExp(r'\s+'));
           if (parts.isNotEmpty && parts.length >= 3) {
             packages.add(InstalledPackage(
@@ -89,10 +90,10 @@ class PackageManager {
             ));
           }
         }
-        
+
         return packages;
       }
-      
+
       return [];
     } catch (e) {
       return [];
@@ -102,52 +103,56 @@ class PackageManager {
   Future<List<InstalledPackage>> _getFlatpakPackages() async {
     try {
       final result = await Process.run('flatpak', ['list', '--app']);
-      
+
       if (result.exitCode == 0) {
         final lines = result.stdout.toString().split('\n');
         final packages = <InstalledPackage>[];
-        
+
         for (var line in lines) {
           if (line.trim().isEmpty) continue;
-          
+
           final parts = line.split('\t');
           if (parts.length >= 2) {
             packages.add(InstalledPackage(
               name: parts[1].trim(), // Application ID
               version: parts.length > 2 ? parts[2].trim() : 'latest',
-              description: parts.isNotEmpty ? parts[0].trim() : 'Flatpak application',
+              description:
+                  parts.isNotEmpty ? parts[0].trim() : 'Flatpak application',
               source: 'flatpak',
               type: PackageType.application,
             ));
           }
         }
-        
+
         return packages;
       }
-      
+
       return [];
     } catch (e) {
       return [];
     }
   }
 
-  Future<InstallationResult> uninstallPackage(String packageName, {String source = 'apt'}) async {
+  Future<InstallationResult> uninstallPackage(String packageName,
+      {String source = 'apt'}) async {
     try {
       ProcessResult result;
-      
+
       switch (source) {
         case 'snap':
           result = await Process.run('pkexec', ['snap', 'remove', packageName]);
           break;
         case 'flatpak':
-          result = await Process.run('pkexec', ['flatpak', 'uninstall', '-y', packageName]);
+          result = await Process.run(
+              'pkexec', ['flatpak', 'uninstall', '-y', packageName]);
           break;
         case 'apt':
         default:
-          result = await Process.run('pkexec', ['apt-get', 'remove', '-y', packageName]);
+          result = await Process.run(
+              'pkexec', ['apt-get', 'remove', '-y', packageName]);
           break;
       }
-      
+
       return InstallationResult(
         success: result.exitCode == 0,
         output: result.stdout.toString(),
@@ -162,25 +167,29 @@ class PackageManager {
     }
   }
 
-  Future<InstallationResult> purgePackage(String packageName, {String source = 'apt'}) async {
+  Future<InstallationResult> purgePackage(String packageName,
+      {String source = 'apt'}) async {
     try {
       ProcessResult result;
-      
+
       switch (source) {
         case 'snap':
           // Snap doesn't have purge, just remove
-          result = await Process.run('pkexec', ['snap', 'remove', '--purge', packageName]);
+          result = await Process.run(
+              'pkexec', ['snap', 'remove', '--purge', packageName]);
           break;
         case 'flatpak':
           // Flatpak doesn't have purge, just uninstall
-          result = await Process.run('pkexec', ['flatpak', 'uninstall', '-y', '--delete-data', packageName]);
+          result = await Process.run('pkexec',
+              ['flatpak', 'uninstall', '-y', '--delete-data', packageName]);
           break;
         case 'apt':
         default:
-          result = await Process.run('pkexec', ['apt-get', 'purge', '-y', packageName]);
+          result = await Process.run(
+              'pkexec', ['apt-get', 'purge', '-y', packageName]);
           break;
       }
-      
+
       return InstallationResult(
         success: result.exitCode == 0,
         output: result.stdout.toString(),
@@ -196,27 +205,31 @@ class PackageManager {
   }
 
   /// Update a specific package
-  Future<InstallationResult> updatePackage(String packageName, {String source = 'apt'}) async {
+  Future<InstallationResult> updatePackage(String packageName,
+      {String source = 'apt'}) async {
     final startTime = DateTime.now();
-    
+
     try {
       ProcessResult result;
-      
+
       switch (source) {
         case 'snap':
-          result = await Process.run('pkexec', ['snap', 'refresh', packageName]);
+          result =
+              await Process.run('pkexec', ['snap', 'refresh', packageName]);
           break;
         case 'flatpak':
-          result = await Process.run('pkexec', ['flatpak', 'update', '-y', packageName]);
+          result = await Process.run(
+              'pkexec', ['flatpak', 'update', '-y', packageName]);
           break;
         case 'apt':
         default:
           // Update package list first
           await Process.run('pkexec', ['apt', 'update']);
-          result = await Process.run('pkexec', ['apt', 'install', '--only-upgrade', '-y', packageName]);
+          result = await Process.run('pkexec',
+              ['apt', 'install', '--only-upgrade', '-y', packageName]);
           break;
       }
-      
+
       return InstallationResult(
         success: result.exitCode == 0,
         output: result.stdout.toString(),
@@ -238,10 +251,10 @@ class PackageManager {
   /// Update all packages
   Future<InstallationResult> updateAllPackages({String source = 'apt'}) async {
     final startTime = DateTime.now();
-    
+
     try {
       ProcessResult result;
-      
+
       switch (source) {
         case 'snap':
           result = await Process.run('pkexec', ['snap', 'refresh']);
@@ -256,7 +269,7 @@ class PackageManager {
           result = await Process.run('pkexec', ['apt', 'upgrade', '-y']);
           break;
       }
-      
+
       return InstallationResult(
         success: result.exitCode == 0,
         output: result.stdout.toString(),
@@ -274,7 +287,8 @@ class PackageManager {
   }
 
   /// Get detailed information about a package
-  Future<PackageInfo?> getPackageDetails(String packageName, {String source = 'apt'}) async {
+  Future<PackageInfo?> getPackageDetails(String packageName,
+      {String source = 'apt'}) async {
     try {
       switch (source) {
         case 'snap':
@@ -293,7 +307,7 @@ class PackageManager {
   Future<PackageInfo?> _getAptPackageDetails(String packageName) async {
     try {
       final result = await Process.run('apt', ['show', packageName]);
-      
+
       if (result.exitCode == 0) {
         return PackageInfo.fromAptShow(result.stdout.toString());
       }
@@ -306,17 +320,17 @@ class PackageManager {
   Future<PackageInfo?> _getSnapPackageDetails(String packageName) async {
     try {
       final result = await Process.run('snap', ['info', packageName]);
-      
+
       if (result.exitCode == 0) {
         final output = result.stdout.toString();
         final lines = output.split('\n');
-        
+
         String name = packageName;
         String version = '';
         String description = '';
         String? homepage;
         String? maintainer;
-        
+
         for (var line in lines) {
           if (line.startsWith('name:')) {
             name = line.substring(5).trim();
@@ -330,7 +344,7 @@ class PackageManager {
             maintainer = line.substring(10).trim();
           }
         }
-        
+
         return PackageInfo(
           name: name,
           version: version,
@@ -349,15 +363,15 @@ class PackageManager {
   Future<PackageInfo?> _getFlatpakPackageDetails(String packageName) async {
     try {
       final result = await Process.run('flatpak', ['info', packageName]);
-      
+
       if (result.exitCode == 0) {
         final output = result.stdout.toString();
         final lines = output.split('\n');
-        
+
         String name = packageName;
         String version = '';
         String description = '';
-        
+
         for (var line in lines) {
           if (line.contains('ID:')) {
             name = line.split(':').last.trim();
@@ -367,7 +381,7 @@ class PackageManager {
             description = line.split(':').last.trim();
           }
         }
-        
+
         return PackageInfo(
           name: name,
           version: version,
@@ -402,13 +416,13 @@ class PackageManager {
     try {
       // Update package list
       await Process.run('apt', ['update']);
-      
+
       final result = await Process.run('apt', ['list', '--upgradable']);
-      
+
       if (result.exitCode == 0) {
         final lines = result.stdout.toString().split('\n');
         final updates = <String>[];
-        
+
         for (var line in lines) {
           if (line.contains('[upgradable from:')) {
             final packageName = line.split('/').first.trim();
@@ -417,7 +431,7 @@ class PackageManager {
             }
           }
         }
-        
+
         return updates;
       }
       return [];
@@ -429,11 +443,11 @@ class PackageManager {
   Future<List<String>> _getSnapUpdates() async {
     try {
       final result = await Process.run('snap', ['refresh', '--list']);
-      
+
       if (result.exitCode == 0) {
         final lines = result.stdout.toString().split('\n');
         final updates = <String>[];
-        
+
         for (var line in lines) {
           if (line.trim().isNotEmpty && !line.startsWith('Name')) {
             final parts = line.split(RegExp(r'\s+'));
@@ -442,7 +456,7 @@ class PackageManager {
             }
           }
         }
-        
+
         return updates;
       }
       return [];
@@ -454,11 +468,11 @@ class PackageManager {
   Future<List<String>> _getFlatpakUpdates() async {
     try {
       final result = await Process.run('flatpak', ['remote-ls', '--updates']);
-      
+
       if (result.exitCode == 0) {
         final lines = result.stdout.toString().split('\n');
         final updates = <String>[];
-        
+
         for (var line in lines) {
           if (line.trim().isNotEmpty) {
             final parts = line.split('\t');
@@ -467,7 +481,7 @@ class PackageManager {
             }
           }
         }
-        
+
         return updates;
       }
       return [];
@@ -479,24 +493,27 @@ class PackageManager {
   /// Clean package cache and remove orphaned packages
   Future<InstallationResult> cleanSystem({String source = 'apt'}) async {
     final startTime = DateTime.now();
-    
+
     try {
       ProcessResult result;
-      
+
       switch (source) {
         case 'snap':
           // Snap doesn't have a traditional clean command
-          result = ProcessResult(0, 0, 'Snap packages are automatically cleaned', '');
+          result = ProcessResult(
+              0, 0, 'Snap packages are automatically cleaned', '');
           break;
         case 'flatpak':
-          result = await Process.run('pkexec', ['flatpak', 'uninstall', '--unused', '-y']);
+          result = await Process.run(
+              'pkexec', ['flatpak', 'uninstall', '--unused', '-y']);
           break;
         case 'apt':
         default:
           // Clean package cache and remove orphaned packages
           final cleanResult = await Process.run('pkexec', ['apt', 'clean']);
-          final autoremoveResult = await Process.run('pkexec', ['apt', 'autoremove', '-y']);
-          
+          final autoremoveResult =
+              await Process.run('pkexec', ['apt', 'autoremove', '-y']);
+
           result = ProcessResult(
             0,
             cleanResult.exitCode == 0 && autoremoveResult.exitCode == 0 ? 0 : 1,
@@ -505,7 +522,7 @@ class PackageManager {
           );
           break;
       }
-      
+
       return InstallationResult(
         success: result.exitCode == 0,
         output: result.stdout.toString(),

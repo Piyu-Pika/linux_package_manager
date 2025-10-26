@@ -16,7 +16,7 @@ class _InstallScreenState extends State<InstallScreen> {
   final PackageInstaller _installer = PackageInstaller();
   final VirusTotalService _virusTotalService = VirusTotalService();
   final ScanReportManager _scanReportManager = ScanReportManager();
-  
+
   bool _isInstalling = false;
   bool _isScanning = false;
   bool _isVirusTotalConfigured = false;
@@ -44,7 +44,17 @@ class _InstallScreenState extends State<InstallScreen> {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['deb', 'rpm', 'pkg', 'tar.gz', 'gz', 'tar', 'xz', 'appimage', 'AppImage'],
+        allowedExtensions: [
+          'deb',
+          'rpm',
+          'pkg',
+          'tar.gz',
+          'gz',
+          'tar',
+          'xz',
+          'appimage',
+          'AppImage'
+        ],
         dialogTitle: 'Select Package File',
       );
 
@@ -55,10 +65,10 @@ class _InstallScreenState extends State<InstallScreen> {
           _installationLog = '';
           _currentScanReport = null;
         });
-        
+
         // Check if we have an existing scan report
         await _checkExistingScanReport();
-        
+
         // Refresh VirusTotal configuration status
         await _checkVirusTotalConfiguration();
       }
@@ -69,11 +79,13 @@ class _InstallScreenState extends State<InstallScreen> {
 
   Future<void> _checkExistingScanReport() async {
     if (_selectedFilePath == null) return;
-    
+
     try {
-      final fileHash = await _virusTotalService.calculateFileHash(_selectedFilePath!);
-      final existingReport = await _scanReportManager.getScanReportByHash(fileHash);
-      
+      final fileHash =
+          await _virusTotalService.calculateFileHash(_selectedFilePath!);
+      final existingReport =
+          await _scanReportManager.getScanReportByHash(fileHash);
+
       if (existingReport != null) {
         setState(() {
           _currentScanReport = existingReport;
@@ -94,11 +106,13 @@ class _InstallScreenState extends State<InstallScreen> {
     }
 
     // Check if file is eligible for scanning
-    final isEligible = await _virusTotalService.isFileEligibleForScanning(_selectedFilePath!);
+    final isEligible =
+        await _virusTotalService.isFileEligibleForScanning(_selectedFilePath!);
     final fileSize = await _virusTotalService.getFileSize(_selectedFilePath!);
 
     if (!isEligible) {
-      _showErrorDialog('File is too large for VirusTotal scanning (max 32MB).\nFile size: $fileSize');
+      _showErrorDialog(
+          'File is too large for VirusTotal scanning (max 32MB).\nFile size: $fileSize');
       return;
     }
 
@@ -114,15 +128,17 @@ class _InstallScreenState extends State<InstallScreen> {
       });
 
       // Calculate file hash
-      final fileHash = await _virusTotalService.calculateFileHash(_selectedFilePath!);
-      
+      final fileHash =
+          await _virusTotalService.calculateFileHash(_selectedFilePath!);
+
       // Check for existing report first
       var report = await _virusTotalService.getExistingReport(fileHash);
-      
+
       if (report == null) {
         // Upload file for scanning
-        final scanId = await _virusTotalService.uploadFileForScanning(_selectedFilePath!);
-        
+        final scanId =
+            await _virusTotalService.uploadFileForScanning(_selectedFilePath!);
+
         // Wait for results
         report = await _virusTotalService.waitForScanResults(scanId);
       }
@@ -134,9 +150,9 @@ class _InstallScreenState extends State<InstallScreen> {
         fileHash,
         report,
       );
-      
+
       await _scanReportManager.saveScanReport(storedReport);
-      
+
       setState(() {
         _currentScanReport = storedReport;
         _isScanning = false;
@@ -150,7 +166,7 @@ class _InstallScreenState extends State<InstallScreen> {
       setState(() {
         _isScanning = false;
       });
-      
+
       if (mounted) {
         Navigator.of(context).pop(); // Close scanning dialog
         _showErrorDialog('Virus scan failed: $e');
@@ -165,7 +181,9 @@ class _InstallScreenState extends State<InstallScreen> {
     }
 
     // Check if we need to show risk warning
-    if (!bypassScan && _currentScanReport != null && !_currentScanReport!.isClean) {
+    if (!bypassScan &&
+        _currentScanReport != null &&
+        !_currentScanReport!.isClean) {
       _showRiskWarningDialog();
       return;
     }
@@ -177,7 +195,7 @@ class _InstallScreenState extends State<InstallScreen> {
 
     try {
       final result = await _installer.installPackage(_selectedFilePath!);
-      
+
       setState(() {
         _isInstalling = false;
         _installationLog += result.output;
@@ -265,7 +283,7 @@ class _InstallScreenState extends State<InstallScreen> {
         ],
       ),
     );
-    
+
     // Start the actual scanning
     _performVirusScan();
   }
@@ -274,10 +292,10 @@ class _InstallScreenState extends State<InstallScreen> {
     final isClean = report.isClean;
     final isSuspicious = report.isSuspicious;
     final isMalicious = report.isMalicious;
-    
+
     Color statusColor = Colors.green;
     IconData statusIcon = Icons.check_circle;
-    
+
     if (isSuspicious) {
       statusColor = Colors.orange;
       statusIcon = Icons.warning;
@@ -330,13 +348,14 @@ class _InstallScreenState extends State<InstallScreen> {
                       ],
                     ),
                     const SizedBox(height: 8),
-                    Text('${report.positives}/${report.total} engines detected threats'),
+                    Text(
+                        '${report.positives}/${report.total} engines detected threats'),
                     if (report.detectionRate > 0)
-                      Text('Detection rate: ${report.detectionRate.toStringAsFixed(1)}%'),
+                      Text(
+                          'Detection rate: ${report.detectionRate.toStringAsFixed(1)}%'),
                   ],
                 ),
               ),
-              
               if (report.detectedThreats.isNotEmpty) ...[
                 const SizedBox(height: 16),
                 const Text(
@@ -369,7 +388,6 @@ class _InstallScreenState extends State<InstallScreen> {
                     style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
               ],
-              
               const SizedBox(height: 16),
               Text(
                 'Scanned on: ${report.scanDate.toString().split('.')[0]}',
@@ -409,7 +427,7 @@ class _InstallScreenState extends State<InstallScreen> {
 
   void _showRiskWarningDialog() {
     bool canProceed = false;
-    
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -425,7 +443,7 @@ class _InstallScreenState extends State<InstallScreen> {
               }
             });
           }
-          
+
           return AlertDialog(
             title: const Row(
               children: [
@@ -464,7 +482,8 @@ class _InstallScreenState extends State<InstallScreen> {
                       const SizedBox(height: 12),
                       Text('File: ${_currentScanReport?.fileName}'),
                       Text('Risk Level: ${_currentScanReport?.riskLevel}'),
-                      Text('Detections: ${_currentScanReport?.positives}/${_currentScanReport?.total}'),
+                      Text(
+                          'Detections: ${_currentScanReport?.positives}/${_currentScanReport?.total}'),
                     ],
                   ),
                 ),
@@ -503,10 +522,12 @@ class _InstallScreenState extends State<InstallScreen> {
                 child: const Text('Cancel'),
               ),
               FilledButton(
-                onPressed: canProceed ? () {
-                  Navigator.pop(context);
-                  _installPackage(bypassScan: true);
-                } : null,
+                onPressed: canProceed
+                    ? () {
+                        Navigator.pop(context);
+                        _installPackage(bypassScan: true);
+                      }
+                    : null,
                 style: FilledButton.styleFrom(
                   backgroundColor: canProceed ? Colors.red : Colors.grey,
                 ),
@@ -570,7 +591,8 @@ class _InstallScreenState extends State<InstallScreen> {
               // For now, just show a message
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Go to Settings → Security & Virus Scanning to configure'),
+                  content: Text(
+                      'Go to Settings → Security & Virus Scanning to configure'),
                   duration: Duration(seconds: 3),
                 ),
               );
@@ -613,13 +635,10 @@ class _InstallScreenState extends State<InstallScreen> {
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
-            borderRadius:const BorderRadius.only(
-              bottomLeft: Radius.circular(16),
-              bottomRight: Radius.circular(16)
-            ),
+            borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(16),
+                bottomRight: Radius.circular(16)),
             border: Border(
-              
-            
               bottom: BorderSide(
                 color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
               ),
@@ -631,20 +650,23 @@ class _InstallScreenState extends State<InstallScreen> {
               Text(
                 'Install Local Package',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                      fontWeight: FontWeight.w600,
+                    ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Install packages from local files on your system',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                ),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withOpacity(0.7),
+                    ),
               ),
             ],
           ),
         ),
-        
+
         // Main content
         Expanded(
           child: SingleChildScrollView(
@@ -664,12 +686,16 @@ class _InstallScreenState extends State<InstallScreen> {
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.primaryContainer,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primaryContainer,
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Icon(
                                 Icons.file_download_rounded,
-                                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onPrimaryContainer,
                               ),
                             ),
                             const SizedBox(width: 16),
@@ -679,30 +705,42 @@ class _InstallScreenState extends State<InstallScreen> {
                                 children: [
                                   Text(
                                     'Select Package File',
-                                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     'Choose a package file from your computer',
-                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withOpacity(0.7),
+                                        ),
                                   ),
                                 ],
                               ),
                             ),
                           ],
                         ),
-                        
+
                         const SizedBox(height: 24),
-                        
+
                         // Supported formats
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest
+                                .withOpacity(0.3),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Column(
@@ -713,15 +751,21 @@ class _InstallScreenState extends State<InstallScreen> {
                                   Icon(
                                     Icons.info_outline_rounded,
                                     size: 20,
-                                    color: Theme.of(context).colorScheme.primary,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
                                     'Supported Formats',
-                                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color: Theme.of(context).colorScheme.primary,
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleSmall
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                        ),
                                   ),
                                 ],
                               ),
@@ -730,20 +774,24 @@ class _InstallScreenState extends State<InstallScreen> {
                                 spacing: 8,
                                 runSpacing: 8,
                                 children: [
-                                  _buildFormatChip('.deb', 'Debian Package', Colors.red),
-                                  _buildFormatChip('.rpm', 'Red Hat Package', Colors.blue),
-                                  _buildFormatChip('.pkg', 'Package File', Colors.green),
-                                  _buildFormatChip('.tar.gz', 'Compressed Archive', Colors.orange),
-                                  _buildFormatChip('.AppImage', 'Portable App', Colors.purple),
+                                  _buildFormatChip(
+                                      '.deb', 'Debian Package', Colors.red),
+                                  _buildFormatChip(
+                                      '.rpm', 'Red Hat Package', Colors.blue),
+                                  _buildFormatChip(
+                                      '.pkg', 'Package File', Colors.green),
+                                  _buildFormatChip('.tar.gz',
+                                      'Compressed Archive', Colors.orange),
+                                  _buildFormatChip('.AppImage', 'Portable App',
+                                      Colors.purple),
                                 ],
                               ),
                             ],
                           ),
                         ),
-                        
+
                         const SizedBox(height: 24),
 
-                        
                         // File selection area
                         GestureDetector(
                           onTap: _isInstalling ? null : _pickFile,
@@ -753,7 +801,10 @@ class _InstallScreenState extends State<InstallScreen> {
                               border: Border.all(
                                 color: _selectedFileName != null
                                     ? Theme.of(context).colorScheme.primary
-                                    : Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                                    : Theme.of(context)
+                                        .colorScheme
+                                        .outline
+                                        .withOpacity(0.3),
                                 width: 2,
                                 style: _selectedFileName != null
                                     ? BorderStyle.solid
@@ -761,11 +812,16 @@ class _InstallScreenState extends State<InstallScreen> {
                               ),
                               borderRadius: BorderRadius.circular(16),
                               color: _selectedFileName != null
-                                  ? Theme.of(context).colorScheme.primaryContainer.withOpacity(0.1)
-                                  : Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                                  ? Theme.of(context)
+                                      .colorScheme
+                                      .primaryContainer
+                                      .withOpacity(0.1)
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .surfaceContainerHighest
+                                      .withOpacity(0.3),
                             ),
                             child: Column(
-                            
                               children: [
                                 Icon(
                                   _selectedFileName != null
@@ -774,44 +830,64 @@ class _InstallScreenState extends State<InstallScreen> {
                                   size: 48,
                                   color: _selectedFileName != null
                                       ? Theme.of(context).colorScheme.primary
-                                      : Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                                      : Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withOpacity(0.5),
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  _selectedFileName ?? 'Click to select a package file',
-                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: _selectedFileName != null
-                                        ? Theme.of(context).colorScheme.primary
-                                        : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                                  ),
+                                  _selectedFileName ??
+                                      'Click to select a package file',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        color: _selectedFileName != null
+                                            ? Theme.of(context)
+                                                .colorScheme
+                                                .primary
+                                            : Theme.of(context)
+                                                .colorScheme
+                                                .onSurface
+                                                .withOpacity(0.7),
+                                      ),
                                   textAlign: TextAlign.center,
                                 ),
                                 if (_selectedFileName == null) ...[
                                   const SizedBox(height: 8),
                                   Text(
                                     'or drag and drop a file here',
-                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withOpacity(0.5),
+                                        ),
                                   ),
                                 ],
                               ],
                             ),
                           ),
                         ),
-                        
+
                         const SizedBox(height: 24),
-                        
+
                         // Scan results display
                         if (_currentScanReport != null) ...[
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: _getScanResultColor(_currentScanReport!).withOpacity(0.1),
+                              color: _getScanResultColor(_currentScanReport!)
+                                  .withOpacity(0.1),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: _getScanResultColor(_currentScanReport!).withOpacity(0.3),
+                                color: _getScanResultColor(_currentScanReport!)
+                                    .withOpacity(0.3),
                               ),
                             ),
                             child: Column(
@@ -821,14 +897,16 @@ class _InstallScreenState extends State<InstallScreen> {
                                   children: [
                                     Icon(
                                       _getScanResultIcon(_currentScanReport!),
-                                      color: _getScanResultColor(_currentScanReport!),
+                                      color: _getScanResultColor(
+                                          _currentScanReport!),
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
                                       'Scan Results: ${_currentScanReport!.riskLevel}',
                                       style: TextStyle(
                                         fontWeight: FontWeight.w600,
-                                        color: _getScanResultColor(_currentScanReport!),
+                                        color: _getScanResultColor(
+                                            _currentScanReport!),
                                       ),
                                     ),
                                   ],
@@ -848,7 +926,7 @@ class _InstallScreenState extends State<InstallScreen> {
                           ),
                           const SizedBox(height: 16),
                         ],
-                        
+
                         // Action buttons
                         Column(
                           children: [
@@ -858,14 +936,16 @@ class _InstallScreenState extends State<InstallScreen> {
                                 children: [
                                   Expanded(
                                     child: OutlinedButton.icon(
-                                      onPressed: _isInstalling || _isScanning ? null : () {
-                                        setState(() {
-                                          _selectedFilePath = null;
-                                          _selectedFileName = null;
-                                          _installationLog = '';
-                                          _currentScanReport = null;
-                                        });
-                                      },
+                                      onPressed: _isInstalling || _isScanning
+                                          ? null
+                                          : () {
+                                              setState(() {
+                                                _selectedFilePath = null;
+                                                _selectedFileName = null;
+                                                _installationLog = '';
+                                                _currentScanReport = null;
+                                              });
+                                            },
                                       icon: const Icon(Icons.clear_rounded),
                                       label: const Text('Clear'),
                                     ),
@@ -873,14 +953,17 @@ class _InstallScreenState extends State<InstallScreen> {
                                   const SizedBox(width: 16),
                                   Expanded(
                                     child: OutlinedButton.icon(
-                                      onPressed: _isInstalling || _isScanning || _selectedFilePath == null
+                                      onPressed: _isInstalling ||
+                                              _isScanning ||
+                                              _selectedFilePath == null
                                           ? null
                                           : _scanWithVirusTotal,
                                       icon: _isScanning
                                           ? const SizedBox(
                                               width: 16,
                                               height: 16,
-                                              child: CircularProgressIndicator(strokeWidth: 2),
+                                              child: CircularProgressIndicator(
+                                                  strokeWidth: 2),
                                             )
                                           : Icon(
                                               _isVirusTotalConfigured
@@ -896,12 +979,15 @@ class _InstallScreenState extends State<InstallScreen> {
                                       ),
                                       style: OutlinedButton.styleFrom(
                                         side: BorderSide(
-                                          color: _currentScanReport?.isClean == true
+                                          color: _currentScanReport?.isClean ==
+                                                  true
                                               ? Colors.green
                                               : _currentScanReport != null
                                                   ? Colors.orange
                                                   : _isVirusTotalConfigured
-                                                      ? Theme.of(context).colorScheme.outline
+                                                      ? Theme.of(context)
+                                                          .colorScheme
+                                                          .outline
                                                       : Colors.orange,
                                         ),
                                       ),
@@ -909,14 +995,17 @@ class _InstallScreenState extends State<InstallScreen> {
                                   ),
                                 ],
                               ),
-                            
-                            if (_selectedFileName != null) const SizedBox(height: 16),
-                            
+
+                            if (_selectedFileName != null)
+                              const SizedBox(height: 16),
+
                             // Second row: Install button
                             SizedBox(
                               width: double.infinity,
                               child: FilledButton.icon(
-                                onPressed: _isInstalling || _isScanning || _selectedFilePath == null
+                                onPressed: _isInstalling ||
+                                        _isScanning ||
+                                        _selectedFilePath == null
                                     ? null
                                     : () => _installPackage(),
                                 icon: _isInstalling
@@ -930,11 +1019,15 @@ class _InstallScreenState extends State<InstallScreen> {
                                       )
                                     : const Icon(Icons.install_desktop_rounded),
                                 label: Text(
-                                  _isInstalling ? 'Installing...' : 'Install Package',
+                                  _isInstalling
+                                      ? 'Installing...'
+                                      : 'Install Package',
                                 ),
                                 style: FilledButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
-                                  backgroundColor: _currentScanReport != null && !_currentScanReport!.isClean
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
+                                  backgroundColor: _currentScanReport != null &&
+                                          !_currentScanReport!.isClean
                                       ? Colors.orange
                                       : null,
                                 ),
@@ -946,7 +1039,7 @@ class _InstallScreenState extends State<InstallScreen> {
                     ),
                   ),
                 ),
-                
+
                 // Installation log
                 if (_installationLog.isNotEmpty) ...[
                   const SizedBox(height: 24),
@@ -961,21 +1054,28 @@ class _InstallScreenState extends State<InstallScreen> {
                               Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.secondaryContainer,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .secondaryContainer,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Icon(
                                   Icons.terminal_rounded,
                                   size: 20,
-                                  color: Theme.of(context).colorScheme.onSecondaryContainer,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSecondaryContainer,
                                 ),
                               ),
                               const SizedBox(width: 12),
                               Text(
                                 'Installation Log',
-                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                    ),
                               ),
                             ],
                           ),
@@ -985,10 +1085,16 @@ class _InstallScreenState extends State<InstallScreen> {
                             height: 300,
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest
+                                  .withOpacity(0.3),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .outline
+                                    .withOpacity(0.2),
                               ),
                             ),
                             child: SingleChildScrollView(
@@ -997,7 +1103,10 @@ class _InstallScreenState extends State<InstallScreen> {
                                 style: TextStyle(
                                   fontFamily: 'monospace',
                                   fontSize: 13,
-                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withOpacity(0.8),
                                 ),
                               ),
                             ),

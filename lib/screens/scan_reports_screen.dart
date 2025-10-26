@@ -70,29 +70,38 @@ class ScanReportsScreen extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+              color: Theme.of(context)
+                  .colorScheme
+                  .surfaceContainerHighest
+                  .withValues(alpha: 0.3),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.security_rounded,
               size: 64,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.5),
             ),
           ),
           const SizedBox(height: 24),
           Text(
             'No Scan Reports',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+                  fontWeight: FontWeight.w600,
+                ),
           ),
           const SizedBox(height: 8),
           Text(
             'No files have been scanned yet.\nInstall packages to see security scan results.',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-            ),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.7),
+                ),
           ),
         ],
       ),
@@ -129,22 +138,27 @@ class ScanReportsScreen extends ConsumerWidget {
                       Text(
                         report.fileName,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                              fontWeight: FontWeight.w600,
+                            ),
                       ),
                       const SizedBox(height: 4),
                       Row(
                         children: [
                           Text(
                             'Scanned ${_formatDate(report.scanDate)}',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                            ),
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withValues(alpha: 0.7),
+                                    ),
                           ),
                           if (report.provider != null) ...[
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
                                 color: Colors.blue.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
@@ -165,7 +179,8 @@ class ScanReportsScreen extends ConsumerWidget {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: _getRiskColor(report).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
@@ -213,8 +228,8 @@ class ScanReportsScreen extends ConsumerWidget {
               Text(
                 'Detected Threats:',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                      fontWeight: FontWeight.w600,
+                    ),
               ),
               const SizedBox(height: 8),
               Container(
@@ -235,9 +250,9 @@ class ScanReportsScreen extends ConsumerWidget {
                       child: Text(
                         threat,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.red.shade700,
-                          fontFamily: 'monospace',
-                        ),
+                              color: Colors.red.shade700,
+                              fontFamily: 'monospace',
+                            ),
                       ),
                     );
                   }).toList(),
@@ -248,9 +263,12 @@ class ScanReportsScreen extends ConsumerWidget {
                 Text(
                   '... and ${report.detectedThreats.length - 3} more threats',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                    fontStyle: FontStyle.italic,
-                  ),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.7),
+                        fontStyle: FontStyle.italic,
+                      ),
                 ),
               ],
             ],
@@ -305,16 +323,19 @@ class ScanReportsScreen extends ConsumerWidget {
           Text(
             value,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: color,
-            ),
+                  fontWeight: FontWeight.w700,
+                  color: color,
+                ),
           ),
           const SizedBox(height: 4),
           Text(
             label,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-            ),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.7),
+                ),
           ),
         ],
       ),
@@ -335,8 +356,10 @@ class ScanReportsScreen extends ConsumerWidget {
               _buildDetailRow('File Hash', report.fileHash),
               _buildDetailRow('Scan Date', _formatDate(report.scanDate)),
               _buildDetailRow('Risk Level', report.riskLevel),
-              _buildDetailRow('Detections', '${report.positives}/${report.total}'),
-              _buildDetailRow('Detection Rate', '${report.detectionRate.toStringAsFixed(1)}%'),
+              _buildDetailRow(
+                  'Detections', '${report.positives}/${report.total}'),
+              _buildDetailRow('Detection Rate',
+                  '${report.detectionRate.toStringAsFixed(1)}%'),
               if (report.detectedThreats.isNotEmpty) ...[
                 const SizedBox(height: 16),
                 const Text(

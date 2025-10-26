@@ -77,7 +77,7 @@ class SecurityScannerService {
     // Upload and scan file
     final scanId = await _uploadFile(provider, filePath);
     final report = await _waitForResults(provider, scanId);
-    
+
     return UnifiedScanReport(
       provider: provider,
       filePath: filePath,
@@ -93,18 +93,26 @@ class SecurityScannerService {
     );
   }
 
-  Future<UnifiedScanReport?> _getExistingReport(SecurityProvider provider, String fileHash) async {
+  Future<UnifiedScanReport?> _getExistingReport(
+      SecurityProvider provider, String fileHash) async {
     try {
       switch (provider) {
         case SecurityProvider.virusTotal:
           final report = await _virusTotalService.getExistingReport(fileHash);
-          return report != null ? _convertVirusTotalReport(report, '', '', fileHash) : null;
+          return report != null
+              ? _convertVirusTotalReport(report, '', '', fileHash)
+              : null;
         case SecurityProvider.hybridAnalysis:
-          final report = await _hybridAnalysisService.getExistingReport(fileHash);
-          return report != null ? _convertHybridAnalysisReport(report, '', '', fileHash) : null;
+          final report =
+              await _hybridAnalysisService.getExistingReport(fileHash);
+          return report != null
+              ? _convertHybridAnalysisReport(report, '', '', fileHash)
+              : null;
         case SecurityProvider.metaDefender:
           final report = await _metaDefenderService.getExistingReport(fileHash);
-          return report != null ? _convertMetaDefenderReport(report, '', '', fileHash) : null;
+          return report != null
+              ? _convertMetaDefenderReport(report, '', '', fileHash)
+              : null;
       }
     } catch (e) {
       return null; // No existing report found
@@ -122,7 +130,8 @@ class SecurityScannerService {
     }
   }
 
-  Future<UnifiedScanReport> _waitForResults(SecurityProvider provider, String scanId) async {
+  Future<UnifiedScanReport> _waitForResults(
+      SecurityProvider provider, String scanId) async {
     switch (provider) {
       case SecurityProvider.virusTotal:
         final report = await _virusTotalService.waitForScanResults(scanId);
@@ -136,7 +145,8 @@ class SecurityScannerService {
     }
   }
 
-  UnifiedScanReport _convertVirusTotalReport(VirusTotalReport report, String filePath, String fileName, String fileHash) {
+  UnifiedScanReport _convertVirusTotalReport(VirusTotalReport report,
+      String filePath, String fileName, String fileHash) {
     return UnifiedScanReport(
       provider: SecurityProvider.virusTotal,
       filePath: filePath,
@@ -152,7 +162,8 @@ class SecurityScannerService {
     );
   }
 
-  UnifiedScanReport _convertHybridAnalysisReport(HybridAnalysisReport report, String filePath, String fileName, String fileHash) {
+  UnifiedScanReport _convertHybridAnalysisReport(HybridAnalysisReport report,
+      String filePath, String fileName, String fileHash) {
     return UnifiedScanReport(
       provider: SecurityProvider.hybridAnalysis,
       filePath: filePath,
@@ -168,7 +179,8 @@ class SecurityScannerService {
     );
   }
 
-  UnifiedScanReport _convertMetaDefenderReport(MetaDefenderReport report, String filePath, String fileName, String fileHash) {
+  UnifiedScanReport _convertMetaDefenderReport(MetaDefenderReport report,
+      String filePath, String fileName, String fileHash) {
     return UnifiedScanReport(
       provider: SecurityProvider.metaDefender,
       filePath: filePath,
@@ -215,7 +227,7 @@ class UnifiedScanReport {
   bool get isClean => positives == 0;
   bool get isSuspicious => positives > 0 && positives <= 3;
   bool get isMalicious => positives > 3;
-  
+
   double get detectionRate => total > 0 ? (positives / total) * 100 : 0.0;
 
   /// Convert to StoredScanReport for persistence

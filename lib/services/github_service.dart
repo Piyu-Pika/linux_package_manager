@@ -16,7 +16,8 @@ class GitHubService {
   }
 
   /// Search for GitHub repositories
-  Future<List<GitHubRepository>> searchRepositories(String query, {int page = 1, int perPage = 30}) async {
+  Future<List<GitHubRepository>> searchRepositories(String query,
+      {int page = 1, int perPage = 30}) async {
     try {
       final response = await _dio.get(
         'https://api.github.com/search/repositories',
@@ -32,10 +33,10 @@ class GitHubService {
       if (response.statusCode == 200) {
         final data = response.data;
         final items = data['items'] as List;
-        
+
         return items.map((item) => GitHubRepository.fromJson(item)).toList();
       }
-      
+
       return [];
     } catch (e) {
       throw GitHubException('Failed to search repositories: $e');
@@ -43,7 +44,8 @@ class GitHubService {
   }
 
   /// Get repository releases
-  Future<List<GitHubRelease>> getRepositoryReleases(String owner, String repo) async {
+  Future<List<GitHubRelease>> getRepositoryReleases(
+      String owner, String repo) async {
     try {
       final response = await _dio.get(
         'https://api.github.com/repos/$owner/$repo/releases',
@@ -53,7 +55,7 @@ class GitHubService {
         final data = response.data as List;
         return data.map((item) => GitHubRelease.fromJson(item)).toList();
       }
-      
+
       return [];
     } catch (e) {
       throw GitHubException('Failed to get releases: $e');
@@ -70,7 +72,7 @@ class GitHubService {
       if (response.statusCode == 200) {
         return GitHubRelease.fromJson(response.data);
       }
-      
+
       return null;
     } catch (e) {
       // Repository might not have releases
@@ -88,7 +90,7 @@ class GitHubService {
       if (response.statusCode == 200) {
         return GitHubRepository.fromJson(response.data);
       }
-      
+
       return null;
     } catch (e) {
       throw GitHubException('Failed to get repository: $e');
@@ -151,9 +153,12 @@ class GitHubService {
       }
 
       // Penalize Windows/Mac specific files
-      if (name.contains('windows') || name.contains('win') || 
-          name.contains('macos') || name.contains('darwin') ||
-          name.endsWith('.exe') || name.endsWith('.msi') ||
+      if (name.contains('windows') ||
+          name.contains('win') ||
+          name.contains('macos') ||
+          name.contains('darwin') ||
+          name.endsWith('.exe') ||
+          name.endsWith('.msi') ||
           name.endsWith('.dmg')) {
         score -= 50;
       }
@@ -173,9 +178,11 @@ class GitHubService {
   }
 
   /// Convert GitHub repository to PackageInfo
-  Future<PackageInfo> repositoryToPackageInfo(GitHubRepository repo, {GitHubRelease? release}) async {
-    final asset = release != null ? await findBestAssetForSystem(release.assets) : null;
-    
+  Future<PackageInfo> repositoryToPackageInfo(GitHubRepository repo,
+      {GitHubRelease? release}) async {
+    final asset =
+        release != null ? await findBestAssetForSystem(release.assets) : null;
+
     return PackageInfo(
       name: repo.name,
       version: release?.tagName ?? 'latest',
@@ -184,8 +191,11 @@ class GitHubService {
       maintainer: repo.owner.login,
       source: PackageSource.github,
       downloadUrl: asset?.browserDownloadUrl ?? repo.archiveUrl,
-      rating: repo.stargazersCount > 0 ? (repo.stargazersCount / 1000).clamp(0.0, 5.0) : null,
-      downloads: release?.assets.fold<int>(0, (sum, asset) => sum + asset.downloadCount),
+      rating: repo.stargazersCount > 0
+          ? (repo.stargazersCount / 1000).clamp(0.0, 5.0)
+          : null,
+      downloads: release?.assets
+          .fold<int>(0, (sum, asset) => sum + asset.downloadCount),
       lastUpdated: release?.publishedAt ?? repo.updatedAt,
     );
   }
@@ -230,7 +240,8 @@ class GitHubRepository {
       owner: GitHubUser.fromJson(json['owner']),
       description: json['description'],
       htmlUrl: json['html_url'],
-      archiveUrl: '${json['html_url']}/archive/refs/heads/${json['default_branch'] ?? 'main'}.tar.gz',
+      archiveUrl:
+          '${json['html_url']}/archive/refs/heads/${json['default_branch'] ?? 'main'}.tar.gz',
       stargazersCount: json['stargazers_count'] ?? 0,
       forksCount: json['forks_count'] ?? 0,
       language: json['language'],
@@ -285,7 +296,8 @@ class GitHubRelease {
 
   factory GitHubRelease.fromJson(Map<String, dynamic> json) {
     final assetsData = json['assets'] as List? ?? [];
-    final assets = assetsData.map((asset) => GitHubAsset.fromJson(asset)).toList();
+    final assets =
+        assetsData.map((asset) => GitHubAsset.fromJson(asset)).toList();
 
     return GitHubRelease(
       id: json['id'],
@@ -330,16 +342,17 @@ class GitHubAsset {
   String get formattedSize {
     if (size < 1024) return '${size}B';
     if (size < 1024 * 1024) return '${(size / 1024).toStringAsFixed(1)}KB';
-    if (size < 1024 * 1024 * 1024) return '${(size / (1024 * 1024)).toStringAsFixed(1)}MB';
+    if (size < 1024 * 1024 * 1024)
+      return '${(size / (1024 * 1024)).toStringAsFixed(1)}MB';
     return '${(size / (1024 * 1024 * 1024)).toStringAsFixed(1)}GB';
   }
 }
 
 class GitHubException implements Exception {
   final String message;
-  
+
   GitHubException(this.message);
-  
+
   @override
   String toString() => 'GitHubException: $message';
 }

@@ -357,7 +357,8 @@ class _SecurityProviderSelectionScreenState
 
   Widget _buildQuickStats(ThemeData theme) {
     final configuredCount = _apiKeyControllers.entries
-        .where((e) => e.value.text.isNotEmpty && e.key.validateApiKeyFormat(e.value.text))
+        .where((e) =>
+            e.value.text.isNotEmpty && e.key.validateApiKeyFormat(e.value.text))
         .length;
 
     return Row(
@@ -531,7 +532,8 @@ class _SecurityProviderSelectionScreenState
                                         borderRadius: BorderRadius.circular(12),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.green.withOpacity(0.3),
+                                            color:
+                                                Colors.green.withOpacity(0.3),
                                             blurRadius: 4,
                                             offset: const Offset(0, 2),
                                           ),
@@ -971,8 +973,8 @@ class _SecurityProviderSelectionScreenState
                           '🔍 Antivirus Engines', '70+', '1', '30+', theme),
                       _buildComparisonRow(
                           '📦 Free File Size', '32MB', '100MB', '50MB', theme),
-                      _buildComparisonRow('💎 Paid File Size', '650MB',
-                          '500MB', '1GB', theme),
+                      _buildComparisonRow(
+                          '💎 Paid File Size', '650MB', '500MB', '1GB', theme),
                       _buildComparisonRow('⚡ Analysis Type', 'Static',
                           'Dynamic', 'Static + DLP', theme),
                       _buildComparisonRow('⏱️ Scan Speed', 'Fast (1-2 min)',
@@ -1242,7 +1244,8 @@ class _SecurityProviderSelectionScreenState
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.lightbulb, color: Colors.blue, size: 20),
+                          const Icon(Icons.lightbulb,
+                              color: Colors.blue, size: 20),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(

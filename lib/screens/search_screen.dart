@@ -16,7 +16,7 @@ class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   final PackageSearchService _searchService = PackageSearchService();
   final PackageInstaller _installer = PackageInstaller();
-  
+
   List<PackageInfo> _searchResults = [];
   bool _isSearching = false;
   List<String> _availableManagers = [];
@@ -34,17 +34,18 @@ class _SearchScreenState extends State<SearchScreen> {
     setState(() {
       _availableManagers = managers;
       _selectedSources.clear();
-      
+
       // Auto-select available sources
       if (managers.contains('apt')) _selectedSources.add(PackageSource.apt);
       if (managers.contains('snap')) _selectedSources.add(PackageSource.snap);
-      if (managers.contains('flatpak')) _selectedSources.add(PackageSource.flatpak);
+      if (managers.contains('flatpak'))
+        _selectedSources.add(PackageSource.flatpak);
     });
   }
 
   Future<void> _searchPackages(String query) async {
     if (query.trim().isEmpty) return;
-    
+
     setState(() {
       _isSearching = true;
       _lastQuery = query;
@@ -53,15 +54,18 @@ class _SearchScreenState extends State<SearchScreen> {
 
     final List<Future<List<PackageInfo>>> searchFutures = [];
 
-    if (_selectedSources.contains(PackageSource.apt) && _availableManagers.contains('apt')) {
+    if (_selectedSources.contains(PackageSource.apt) &&
+        _availableManagers.contains('apt')) {
       searchFutures.add(_searchService.searchAptPackages(query));
     }
-    
-    if (_selectedSources.contains(PackageSource.snap) && _availableManagers.contains('snap')) {
+
+    if (_selectedSources.contains(PackageSource.snap) &&
+        _availableManagers.contains('snap')) {
       searchFutures.add(_searchService.searchSnapPackages(query));
     }
-    
-    if (_selectedSources.contains(PackageSource.flatpak) && _availableManagers.contains('flatpak')) {
+
+    if (_selectedSources.contains(PackageSource.flatpak) &&
+        _availableManagers.contains('flatpak')) {
       searchFutures.add(_searchService.searchFlatpakPackages(query));
     }
 
@@ -75,7 +79,7 @@ class _SearchScreenState extends State<SearchScreen> {
     try {
       final results = await Future.wait(searchFutures);
       final allPackages = <PackageInfo>[];
-      
+
       for (var packageList in results) {
         allPackages.addAll(packageList);
       }
@@ -176,7 +180,10 @@ class _SearchScreenState extends State<SearchScreen> {
             color: Theme.of(context).colorScheme.surface,
             border: Border(
               bottom: BorderSide(
-                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+                color: Theme.of(context)
+                    .colorScheme
+                    .outline
+                    .withValues(alpha: 0.2),
               ),
             ),
           ),
@@ -186,23 +193,27 @@ class _SearchScreenState extends State<SearchScreen> {
               Text(
                 'Discover Packages',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                      fontWeight: FontWeight.w600,
+                    ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Search and install packages from multiple sources',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                ),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.7),
+                    ),
               ),
               const SizedBox(height: 24),
-              
+
               // Search bar
               TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
-                  hintText: 'Search packages... (e.g., "firefox" or "user/repo" for GitHub)',
+                  hintText:
+                      'Search packages... (e.g., "firefox" or "user/repo" for GitHub)',
                   prefixIcon: const Icon(Icons.search_rounded),
                   suffixIcon: _isSearching
                       ? const Padding(
@@ -231,16 +242,16 @@ class _SearchScreenState extends State<SearchScreen> {
                   setState(() {}); // Trigger rebuild to show/hide clear button
                 },
               ),
-              
+
               const SizedBox(height: 20),
-              
+
               // Source filters
               if (_availableManagers.isNotEmpty) ...[
                 Text(
                   'Package Sources',
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
                 const SizedBox(height: 12),
                 Wrap(
@@ -276,7 +287,7 @@ class _SearchScreenState extends State<SearchScreen> {
             ],
           ),
         ),
-        
+
         // Search results
         Expanded(
           child: _buildSearchResults(),
@@ -287,7 +298,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Widget _buildSourceChip(PackageSource source, String label, Color color) {
     final isSelected = _selectedSources.contains(source);
-    
+
     return FilterChip(
       label: Text(label),
       selected: isSelected,
@@ -313,7 +324,7 @@ class _SearchScreenState extends State<SearchScreen> {
     if (_searchResults.isEmpty && _lastQuery.isNotEmpty && !_isSearching) {
       return _buildEmptyState();
     }
-    
+
     if (_searchResults.isEmpty && _lastQuery.isEmpty) {
       return _buildWelcomeState();
     }
@@ -336,7 +347,10 @@ class _SearchScreenState extends State<SearchScreen> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+              color: Theme.of(context)
+                  .colorScheme
+                  .primaryContainer
+                  .withValues(alpha: 0.3),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -349,16 +363,17 @@ class _SearchScreenState extends State<SearchScreen> {
           Text(
             'Start Discovering',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+                  fontWeight: FontWeight.w600,
+                ),
           ),
           const SizedBox(height: 8),
           Text(
             'Search for packages across multiple sources\nto find exactly what you need',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-            ),
+                  color:
+                      Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                ),
           ),
         ],
       ),
@@ -373,7 +388,8 @@ class _SearchScreenState extends State<SearchScreen> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.errorContainer.withOpacity(0.3),
+              color:
+                  Theme.of(context).colorScheme.errorContainer.withOpacity(0.3),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -386,16 +402,17 @@ class _SearchScreenState extends State<SearchScreen> {
           Text(
             'No Results Found',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+                  fontWeight: FontWeight.w600,
+                ),
           ),
           const SizedBox(height: 8),
           Text(
             'No packages found for "$_lastQuery"\nTry different keywords or check your sources',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-            ),
+                  color:
+                      Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                ),
           ),
         ],
       ),
@@ -431,19 +448,22 @@ class _SearchScreenState extends State<SearchScreen> {
                       Text(
                         package.name,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                              fontWeight: FontWeight.w600,
+                            ),
                       ),
                       const SizedBox(height: 4),
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: _getSourceColor(package.source).withOpacity(0.1),
+                              color: _getSourceColor(package.source)
+                                  .withOpacity(0.1),
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
-                                color: _getSourceColor(package.source).withOpacity(0.3),
+                                color: _getSourceColor(package.source)
+                                    .withOpacity(0.3),
                               ),
                             ),
                             child: Text(
@@ -458,17 +478,27 @@ class _SearchScreenState extends State<SearchScreen> {
                           const SizedBox(width: 8),
                           Text(
                             'v${package.version}',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                            ),
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withOpacity(0.7),
+                                    ),
                           ),
                           if (package.size != null) ...[
                             const SizedBox(width: 8),
                             Text(
                               '• ${package.formattedSize}',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withOpacity(0.7),
+                                  ),
                             ),
                           ],
                         ],
@@ -492,8 +522,11 @@ class _SearchScreenState extends State<SearchScreen> {
               Text(
                 package.description,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
-                ),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withOpacity(0.8),
+                    ),
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -531,10 +564,12 @@ class InstallationProgressDialog extends StatefulWidget {
   });
 
   @override
-  State<InstallationProgressDialog> createState() => _InstallationProgressDialogState();
+  State<InstallationProgressDialog> createState() =>
+      _InstallationProgressDialogState();
 }
 
-class _InstallationProgressDialogState extends State<InstallationProgressDialog> {
+class _InstallationProgressDialogState
+    extends State<InstallationProgressDialog> {
   String _status = 'Preparing installation...';
   String _output = '';
   bool _isComplete = false;
@@ -552,12 +587,14 @@ class _InstallationProgressDialogState extends State<InstallationProgressDialog>
     });
 
     try {
-      final result = await widget.installer.installFromPackageInfo(widget.package);
-      
+      final result =
+          await widget.installer.installFromPackageInfo(widget.package);
+
       setState(() {
         _isComplete = true;
         _success = result.success;
-        _status = result.success ? 'Installation completed!' : 'Installation failed';
+        _status =
+            result.success ? 'Installation completed!' : 'Installation failed';
         _output = result.output;
       });
     } catch (e) {

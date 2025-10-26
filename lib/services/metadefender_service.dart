@@ -25,7 +25,8 @@ class MetaDefenderService {
     try {
       final file = File(filePath);
       final fileSize = await file.length();
-      final maxSize = await ApiConfig.getMaxFileSizeForProvider(SecurityProvider.metaDefender);
+      final maxSize = await ApiConfig.getMaxFileSizeForProvider(
+          SecurityProvider.metaDefender);
       return fileSize <= maxSize;
     } catch (e) {
       return false;
@@ -56,9 +57,9 @@ class MetaDefenderService {
     if (!await isConfigured()) {
       throw MetaDefenderException('MetaDefender API key not configured');
     }
-    
+
     final apiKey = await ApiConfig.getApiKey(SecurityProvider.metaDefender);
-    
+
     try {
       final response = await _dio.get(
         '${SecurityProvider.metaDefender.baseUrl}/hash/$fileHash',
@@ -87,14 +88,14 @@ class MetaDefenderService {
     if (!await isConfigured()) {
       throw MetaDefenderException('MetaDefender API key not configured');
     }
-    
+
     final apiKey = await ApiConfig.getApiKey(SecurityProvider.metaDefender);
-    
+
     try {
       final file = File(filePath);
       final fileName = file.path.split('/').last;
       final fileBytes = await file.readAsBytes();
-      
+
       final response = await _dio.post(
         '${SecurityProvider.metaDefender.baseUrl}/file',
         data: fileBytes,
@@ -111,7 +112,8 @@ class MetaDefenderService {
         final data = response.data;
         return data['data_id'];
       } else {
-        throw MetaDefenderException('Upload failed with status: ${response.statusCode}');
+        throw MetaDefenderException(
+            'Upload failed with status: ${response.statusCode}');
       }
     } catch (e) {
       if (e is MetaDefenderException) rethrow;
@@ -124,9 +126,9 @@ class MetaDefenderService {
     if (!await isConfigured()) {
       throw MetaDefenderException('MetaDefender API key not configured');
     }
-    
+
     final apiKey = await ApiConfig.getApiKey(SecurityProvider.metaDefender);
-    
+
     try {
       final response = await _dio.get(
         '${SecurityProvider.metaDefender.baseUrl}/file/$dataId',
@@ -140,7 +142,7 @@ class MetaDefenderService {
       if (response.statusCode == 200) {
         final data = response.data;
         final scanProgress = data['scan_results']?['progress_percentage'] ?? 0;
-        
+
         if (scanProgress == 100) {
           return MetaDefenderReport.fromJson(data);
         } else {
@@ -148,7 +150,8 @@ class MetaDefenderService {
           return null;
         }
       } else {
-        throw MetaDefenderException('Failed to get report with status: ${response.statusCode}');
+        throw MetaDefenderException(
+            'Failed to get report with status: ${response.statusCode}');
       }
     } catch (e) {
       if (e is MetaDefenderException) rethrow;
@@ -157,30 +160,33 @@ class MetaDefenderService {
   }
 
   /// Poll for scan results with timeout
-  Future<MetaDefenderReport> waitForScanResults(String dataId, {
+  Future<MetaDefenderReport> waitForScanResults(
+    String dataId, {
     Duration? timeout,
     Duration? pollInterval,
   }) async {
     timeout ??= ApiConfig.scanTimeout;
     pollInterval ??= ApiConfig.pollInterval;
     final startTime = DateTime.now();
-    
+
     while (DateTime.now().difference(startTime) < timeout) {
       final report = await getScanReport(dataId);
       if (report != null) {
         return report;
       }
-      
+
       await Future.delayed(pollInterval);
     }
-    
-    throw MetaDefenderException('Scan timeout: Results not available within ${timeout.inMinutes} minutes');
+
+    throw MetaDefenderException(
+        'Scan timeout: Results not available within ${timeout.inMinutes} minutes');
   }
 
   String _formatFileSize(int bytes) {
     if (bytes < 1024) return '${bytes}B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)}KB';
-    if (bytes < 1024 * 1024 * 1024) return '${(bytes / (1024 * 1024)).toStringAsFixed(1)}MB';
+    if (bytes < 1024 * 1024 * 1024)
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)}MB';
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)}GB';
   }
 }
@@ -209,12 +215,13 @@ class MetaDefenderReport {
   });
 
   factory MetaDefenderReport.fromJson(Map<String, dynamic> json) {
-    final scanResultsData = json['scan_results']?['scan_details'] as Map<String, dynamic>? ?? {};
+    final scanResultsData =
+        json['scan_results']?['scan_details'] as Map<String, dynamic>? ?? {};
     final scanResults = <String, ScanEngineResult>{};
-    
+
     int positiveCount = 0;
     int totalCount = 0;
-    
+
     for (final entry in scanResultsData.entries) {
       final result = ScanEngineResult.fromJson(entry.value);
       scanResults[entry.key] = result;
@@ -229,10 +236,12 @@ class MetaDefenderReport {
       sha256: json['file_info']?['sha256'] ?? '',
       md5: json['file_info']?['md5'] ?? '',
       sha1: json['file_info']?['sha1'] ?? '',
-      scanDate: DateTime.parse(json['scan_results']?['start_time'] ?? DateTime.now().toIso8601String()),
+      scanDate: DateTime.parse(json['scan_results']?['start_time'] ??
+          DateTime.now().toIso8601String()),
       positives: positiveCount,
       total: totalCount,
-      permalink: 'https://metadefender.opswat.com/results/file/${json['data_id']}/regular/overview',
+      permalink:
+          'https://metadefender.opswat.com/results/file/${json['data_id']}/regular/overview',
       scanResults: scanResults,
     );
   }
@@ -240,9 +249,9 @@ class MetaDefenderReport {
   bool get isClean => positives == 0;
   bool get isSuspicious => positives > 0 && positives <= 3;
   bool get isMalicious => positives > 3;
-  
+
   double get detectionRate => total > 0 ? (positives / total) * 100 : 0.0;
-  
+
   String get riskLevel {
     if (isClean) return 'Clean';
     if (isSuspicious) return 'Suspicious';
@@ -283,9 +292,9 @@ class ScanEngineResult {
 
 class MetaDefenderException implements Exception {
   final String message;
-  
+
   MetaDefenderException(this.message);
-  
+
   @override
   String toString() => 'MetaDefenderException: $message';
 }

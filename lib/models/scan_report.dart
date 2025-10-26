@@ -76,7 +76,8 @@ class StoredScanReport {
       filePath: json['filePath'] ?? '',
       fileName: json['fileName'] ?? '',
       fileHash: json['fileHash'] ?? '',
-      scanDate: DateTime.parse(json['scanDate'] ?? DateTime.now().toIso8601String()),
+      scanDate:
+          DateTime.parse(json['scanDate'] ?? DateTime.now().toIso8601String()),
       positives: json['positives'] ?? 0,
       total: json['total'] ?? 0,
       riskLevel: json['riskLevel'] ?? 'Unknown',
@@ -118,6 +119,6 @@ class StoredScanReport {
   bool get isClean => positives == 0;
   bool get isSuspicious => positives > 0 && positives <= 3;
   bool get isMalicious => positives > 3;
-  
+
   double get detectionRate => total > 0 ? (positives / total) * 100 : 0.0;
 }

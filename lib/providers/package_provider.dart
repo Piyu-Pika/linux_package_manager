@@ -71,23 +71,26 @@ Future<List<String>> availableUpdates(Ref ref, {String source = 'apt'}) async {
 
 // Package details provider
 @riverpod
-Future<PackageInfo?> packageDetails(Ref ref, String packageName, {String source = 'apt'}) async {
+Future<PackageInfo?> packageDetails(Ref ref, String packageName,
+    {String source = 'apt'}) async {
   final packageManager = ref.watch(packageManagerProvider);
   return await packageManager.getPackageDetails(packageName, source: source);
 }
 
 // GitHub search provider
 @riverpod
-Future<List<GitHubRepository>> gitHubSearch(Ref ref, String query, {int page = 1}) async {
+Future<List<GitHubRepository>> gitHubSearch(Ref ref, String query,
+    {int page = 1}) async {
   if (query.isEmpty) return [];
-  
+
   final gitHubService = ref.watch(gitHubServiceProvider);
   return await gitHubService.searchRepositories(query, page: page);
 }
 
 // GitHub repository releases provider
 @riverpod
-Future<List<GitHubRelease>> gitHubReleases(Ref ref, String owner, String repo) async {
+Future<List<GitHubRelease>> gitHubReleases(
+    Ref ref, String owner, String repo) async {
   final gitHubService = ref.watch(gitHubServiceProvider);
   return await gitHubService.getRepositoryReleases(owner, repo);
 }
@@ -124,7 +127,7 @@ class PackageSearch extends _$PackageSearch {
       // Search GitHub repositories
       final gitHubService = ref.read(gitHubServiceProvider);
       final repositories = await gitHubService.searchRepositories(state.query);
-      
+
       final results = <PackageInfo>[];
       for (final repo in repositories) {
         final packageInfo = await gitHubService.repositoryToPackageInfo(repo);
@@ -133,7 +136,8 @@ class PackageSearch extends _$PackageSearch {
 
       state = state.copyWith(results: results, isLoading: false);
     } catch (e) {
-      state = state.copyWith(results: [], isLoading: false, error: e.toString());
+      state =
+          state.copyWith(results: [], isLoading: false, error: e.toString());
     }
   }
 
@@ -170,7 +174,7 @@ class InstallationState extends _$InstallationState {
       progress: 1.0,
       error: error,
     );
-    
+
     // Refresh installed packages
     ref.invalidate(installedPackagesProvider);
   }

@@ -8,20 +8,20 @@ class SystemDetector {
       if (await osReleaseFile.exists()) {
         final content = await osReleaseFile.readAsString();
         final lines = content.split('\n');
-        
+
         for (var line in lines) {
           if (line.startsWith('ID=')) {
             return line.substring(3).replaceAll('"', '').toLowerCase();
           }
         }
       }
-      
+
       // Fallback to lsb_release
       final result = await Process.run('lsb_release', ['-si']);
       if (result.exitCode == 0) {
         return result.stdout.toString().trim().toLowerCase();
       }
-      
+
       return 'unknown';
     } catch (e) {
       return 'unknown';
@@ -30,7 +30,7 @@ class SystemDetector {
 
   static Future<List<String>> getAvailablePackageManagers() async {
     final managers = <String>[];
-    
+
     // Check for common package managers
     final commands = {
       'apt': 'apt',
@@ -41,7 +41,7 @@ class SystemDetector {
       'snap': 'snap',
       'flatpak': 'flatpak',
     };
-    
+
     for (var entry in commands.entries) {
       try {
         final result = await Process.run('which', [entry.value]);
@@ -52,7 +52,7 @@ class SystemDetector {
         // Command not found
       }
     }
-    
+
     return managers;
   }
 

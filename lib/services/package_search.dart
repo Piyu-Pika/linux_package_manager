@@ -12,11 +12,12 @@ class PackageSearchService {
 
       final packages = <PackageInfo>[];
       final lines = result.stdout.toString().split('\n');
-      
+
       for (var line in lines) {
         if (line.trim().isEmpty || line.startsWith('WARNING')) continue;
-        
-        final match = RegExp(r'^([^/]+)/[^\s]+ ([^\s]+) (.+)$').firstMatch(line);
+
+        final match =
+            RegExp(r'^([^/]+)/[^\s]+ ([^\s]+) (.+)$').firstMatch(line);
         if (match != null) {
           packages.add(PackageInfo(
             name: match.group(1)!,
@@ -26,7 +27,7 @@ class PackageSearchService {
           ));
         }
       }
-      
+
       return packages;
     } catch (e) {
       return [];
@@ -40,12 +41,12 @@ class PackageSearchService {
 
       final packages = <PackageInfo>[];
       final lines = result.stdout.toString().split('\n');
-      
+
       // Skip header line
       for (int i = 1; i < lines.length; i++) {
         final line = lines[i].trim();
         if (line.isEmpty) continue;
-        
+
         final parts = line.split(RegExp(r'\s+'));
         if (parts.length >= 4) {
           packages.add(PackageInfo(
@@ -56,7 +57,7 @@ class PackageSearchService {
           ));
         }
       }
-      
+
       return packages;
     } catch (e) {
       return [];
@@ -70,10 +71,10 @@ class PackageSearchService {
 
       final packages = <PackageInfo>[];
       final lines = result.stdout.toString().split('\n');
-      
+
       for (var line in lines) {
         if (line.trim().isEmpty) continue;
-        
+
         final parts = line.split('\t');
         if (parts.length >= 3) {
           packages.add(PackageInfo(
@@ -84,7 +85,7 @@ class PackageSearchService {
           ));
         }
       }
-      
+
       return packages;
     } catch (e) {
       return [];
@@ -95,22 +96,22 @@ class PackageSearchService {
     try {
       final url = 'https://api.github.com/repos/$repo/releases';
       final response = await http.get(Uri.parse(url));
-      
+
       if (response.statusCode != 200) return [];
-      
+
       final releases = json.decode(response.body) as List;
       final packages = <PackageInfo>[];
-      
+
       for (var release in releases.take(10)) {
         final assets = release['assets'] as List;
         final linuxAssets = assets.where((asset) {
           final name = asset['name'].toString().toLowerCase();
-          return name.contains('linux') || 
-                 name.endsWith('.deb') || 
-                 name.endsWith('.appimage') ||
-                 name.endsWith('.tar.gz');
+          return name.contains('linux') ||
+              name.endsWith('.deb') ||
+              name.endsWith('.appimage') ||
+              name.endsWith('.tar.gz');
         }).toList();
-        
+
         if (linuxAssets.isNotEmpty) {
           packages.add(PackageInfo(
             name: release['name'] ?? repo.split('/').last,
@@ -123,14 +124,15 @@ class PackageSearchService {
           ));
         }
       }
-      
+
       return packages;
     } catch (e) {
       return [];
     }
   }
 
-  Future<PackageInfo?> getPackageDetails(String packageName, PackageSource source) async {
+  Future<PackageInfo?> getPackageDetails(
+      String packageName, PackageSource source) async {
     switch (source) {
       case PackageSource.apt:
         return await _getAptPackageDetails(packageName);
@@ -165,7 +167,7 @@ class PackageSearchService {
       String version = '';
       String description = '';
       String? publisher;
-      
+
       for (var line in lines) {
         if (line.startsWith('name:')) {
           name = line.substring(5).trim();
@@ -199,13 +201,13 @@ class PackageSearchService {
       String name = packageName;
       String version = '';
       String description = '';
-      
+
       for (var line in lines) {
         final parts = line.split(':');
         if (parts.length >= 2) {
           final key = parts[0].trim();
           final value = parts.sublist(1).join(':').trim();
-          
+
           switch (key) {
             case 'Name':
               name = value;

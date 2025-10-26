@@ -18,12 +18,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _selectedIndex = 0;
 
   List<Widget> get _screens => [
-    const SearchScreen(),
-    const InstallScreen(),
-    const InstalledAppsScreen(),
-    const ScanReportsScreen(),
-    const SettingsScreen(),
-  ];
+        const SearchScreen(),
+        const InstallScreen(),
+        const InstalledAppsScreen(),
+        const ScanReportsScreen(),
+        const SettingsScreen(),
+      ];
 
   static const List<NavigationItem> _navigationItems = [
     NavigationItem(
@@ -88,7 +88,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             builder: (context, ref, child) {
               final themeMode = ref.watch(themeModeProvider);
               final themeNotifier = ref.read(themeModeProvider.notifier);
-              
+
               IconData getThemeIcon() {
                 switch (themeMode) {
                   case ThemeMode.light:
@@ -99,7 +99,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     return Icons.brightness_auto_rounded;
                 }
               }
-              
+
               String getThemeString() {
                 switch (themeMode) {
                   case ThemeMode.light:
@@ -110,7 +110,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     return 'System';
                 }
               }
-              
+
               return PopupMenuButton<ThemeMode>(
                 icon: Icon(getThemeIcon()),
                 tooltip: 'Theme: ${getThemeString()}',
@@ -207,7 +207,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 color: Theme.of(context).colorScheme.surface,
                 border: Border(
                   right: BorderSide(
-                    color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .outline
+                        .withValues(alpha: 0.2),
                   ),
                 ),
               ),
@@ -257,7 +260,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           Expanded(
             child: Container(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+              color: Theme.of(context)
+                  .colorScheme
+                  .surfaceContainerHighest
+                  .withValues(alpha: 0.3),
               child: _screens[_selectedIndex],
             ),
           ),

@@ -135,7 +135,7 @@ class InstalledPackage {
     ];
 
     return systemPrefixes.any((prefix) => packageName.startsWith(prefix)) ||
-           systemPackages.contains(packageName);
+        systemPackages.contains(packageName);
   }
 
   static PackageType _getPackageType(String packageName, String description) {
@@ -143,15 +143,15 @@ class InstalledPackage {
     final lowerDesc = description.toLowerCase();
 
     // Games
-    if (lowerName.contains('game') || 
-        lowerDesc.contains('game') || 
+    if (lowerName.contains('game') ||
+        lowerDesc.contains('game') ||
         lowerDesc.contains('puzzle') ||
         lowerDesc.contains('arcade')) {
       return PackageType.game;
     }
 
     // Development tools
-    if (lowerName.contains('dev') || 
+    if (lowerName.contains('dev') ||
         lowerName.contains('gcc') ||
         lowerName.contains('make') ||
         lowerName.contains('cmake') ||
@@ -166,7 +166,7 @@ class InstalledPackage {
     }
 
     // Libraries
-    if (lowerName.startsWith('lib') || 
+    if (lowerName.startsWith('lib') ||
         lowerDesc.contains('library') ||
         lowerDesc.contains('shared library')) {
       return PackageType.library;
